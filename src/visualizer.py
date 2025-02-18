@@ -8,7 +8,43 @@ from PyQt5.QtGui import QBrush, QColor, QFont, QIcon, QPainter, QPen
 from PyQt5.QtWidgets import QWidget
 from sklearn.manifold import MDS
 
-from ant import Ant
+
+# Classe représentant une fourmi animée dans le graphe (seulement pour tester l'animation)
+class TemporaryAnt:
+    def __init__(self, graph, node_index):
+        self.graph = graph
+        self.node_index = node_index
+        self.current_edge = None  # tuple (u, v)
+        self.t = 0.0  # paramètre d'interpolation sur l'arête
+        self.speed = random.uniform(0.5, 1.5)  # fraction du chemin par seconde
+        # Couleur aléatoire pour cette ant
+        self.color = QColor(
+            random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)
+        )
+        self.choose_random_edge(initial=True)
+
+    def choose_random_edge(self, initial=False):
+        if initial:
+            # Choisir une arête au hasard
+            edge = random.choice(list(self.graph.edges()))
+            # Choix aléatoire de la direction
+            if random.random() < 0.5:
+                self.current_edge = edge
+            else:
+                self.current_edge = (edge[1], edge[0])
+        else:
+            u, v = self.current_edge
+            neighbors = list(self.graph.neighbors(v))
+            if u in neighbors and len(neighbors) > 1:
+                neighbors.remove(u)
+            new_v = random.choice(neighbors)
+            self.current_edge = (v, new_v)
+        self.t = 0.0
+
+    def update(self, dt):
+        self.t += self.speed * dt
+        if self.t >= 1.0:
+            self.choose_random_edge(initial=False)
 
 
 # Classe gérant la fenêtre, le rendu et l'animation
@@ -51,7 +87,7 @@ class Visualizer(QWidget):
         self.edge_font = QFont("Arial", 14)
 
         # Création d'un ensemble d'ants
-        self.ants = [Ant(self.G, self.node_index) for _ in range(10)]
+        self.ants = [TemporaryAnt(self.G, self.node_index) for _ in range(10)]
 
         self.last_update = time.time()
         self.timer = QTimer(self)
