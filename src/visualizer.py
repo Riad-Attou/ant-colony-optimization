@@ -1,9 +1,9 @@
+import math
 import time
 
 from PyQt5.QtCore import QPointF, Qt, QTimer
 from PyQt5.QtGui import QBrush, QColor, QFont, QIcon, QPainter, QPen
-from PyQt5.QtWidgets import QWidget
-from sklearn.manifold import MDS
+from PyQt5.QtWidgets import QCheckBox, QLabel, QSlider, QVBoxLayout, QWidget
 
 
 class Visualizer(QWidget):
@@ -16,34 +16,100 @@ class Visualizer(QWidget):
         self.setMinimumSize(800, 600)
         self.setWindowIcon(QIcon("assets/logo.webp"))
 
-        # Polices utilisées pour le rendu
+        # Créer un layout principal pour gérer les widgets overlay (curseur, label, checkbox)
+        self.main_layout = QVBoxLayout(self)
+        # Optionnel : tu peux définir un margin ou aligner ces widgets selon tes préférences
+
+        # Créer le canvas qui affiche la simulation
+        self.canvas = Canvas(civ, parent=self)
+        self.canvas.setGeometry(0, 0, self.width(), self.height())
+        self.canvas.show()
+
+        # Curseur pour la vitesse des ants
+        self.speed_slider = QSlider(Qt.Horizontal, self)
+        self.speed_slider.setMinimum(0)
+        self.speed_slider.setMaximum(20)
+        self.speed_slider.setValue(1)
+        self.speed_slider.setTickInterval(1)
+        self.speed_slider.setTickPosition(QSlider.TicksBelow)
+        # Positionnement en haut à droite
+        self.speed_slider.setGeometry(self.width() - 170, 20, 150, 30)
+        self.speed_slider.valueChanged.connect(self.updateAntSpeed)
+
+        self.speed_label = QLabel("Ant Speed: 1", self)
+        self.speed_label.setGeometry(self.width() - 170, 55, 150, 20)
+        self.speed_label.setStyleSheet("color: white;")
+
+        # Interrupteur (CheckBox) pour afficher ou masquer le texte sous les routes
+        self.road_text_checkbox = QCheckBox("Show Road Text", self)
+        self.road_text_checkbox.setChecked(True)
+        self.road_text_checkbox.setGeometry(self.width() - 170, 80, 150, 20)
+        self.road_text_checkbox.stateChanged.connect(self.toggleRoadText)
+        self.road_text_checkbox.setStyleSheet("color: white;")
+
+        # S'assurer que ces widgets restent au premier plan
+        self.speed_slider.raise_()
+        self.speed_label.raise_()
+        self.road_text_checkbox.raise_()
+
+    def resizeEvent(self, event):
+        # Repositionner le canvas et les contrôles lors d'un redimensionnement
+        self.canvas.setGeometry(0, 0, self.width(), self.height())
+        self.speed_slider.setGeometry(self.width() - 170, 20, 150, 30)
+        self.speed_label.setGeometry(self.width() - 170, 55, 150, 20)
+        self.road_text_checkbox.setGeometry(self.width() - 170, 80, 150, 20)
+        super().resizeEvent(event)
+
+    def updateAntSpeed(self, value):
+        self.speed_label.setText(f"Ant Speed: {value}")
+        self.canvas.setAntSpeed(value)
+
+    def toggleRoadText(self, state):
+        show_text = state == Qt.Checked
+        self.canvas.setShowRoadText(show_text)
+
+
+class Canvas(QWidget):
+    def __init__(self, civ, parent=None):
+        super().__init__(parent)
+        # Polices pour le rendu
         self.__city_font = QFont("Arial", 16)
         self.__road_font = QFont("Arial", 14)
         self.__best_path_font = QFont("Arial", 20)
 
         self.__civ = civ
 
-        # Récupérer la liste des ants depuis la civilisation
+        # Récupérer les ants depuis la civilisation
         self.ants = self.__civ.get_ants()
-
-        self.ant_progress = {ant: 0 for ant in self.ants}
-        # Vitesse globale par défaut (si vous souhaitez l'utiliser)
+        # Initialiser la progression de chaque ant à 0 (toutes partent du même point)
+        self.ant_progress = {ant: 0.0 for ant in self.ants}
+        # Vitesse globale par défaut (multiplicateur)
         self.ant_speed = 1.0
 
-        # Timer pour l'animation (environ 60 FPS)
         self.last_update = time.time()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.updateAnimation)
-        self.timer.start(16)
+        self.timer.start(16)  # environ 60 FPS
 
         self.start_time = time.time()
-        self.ant_launch_delta = 0.05  # délai en secondes entre chaque lancement
+        self.ant_launch_delta = self.ant_speed * 0.04  # délai entre lancements
         self.ant_launch_time = {
             ant: self.start_time + i * self.ant_launch_delta
             for i, ant in enumerate(self.ants)
         }
 
         self.best_path_text = "Best Path: N/A"
+
+        # Propriété pour afficher ou masquer le texte sur les routes
+        self.show_road_text = True
+
+    def setAntSpeed(self, speed):
+        # On met à jour la vitesse globale et recalculons le delta de lancement
+        self.ant_speed = speed
+
+    def setShowRoadText(self, flag):
+        self.show_road_text = flag
+        self.update()
 
     def calc_perp_offset(
         self, start: QPointF, end: QPointF, offset_distance=10
@@ -64,14 +130,10 @@ class Visualizer(QWidget):
 
         all_finished = True
         for ant in self.ants:
-            # Si le temps actuel n'a pas encore atteint le temps de lancement de cette ant,
-            # on ne met pas à jour sa progression (elle reste à 0).
             if now < self.ant_launch_time[ant]:
                 all_finished = False
                 continue
-
-            # Sinon, on met à jour la progression de l'ant avec sa vitesse propre.
-            progress = self.ant_progress[ant] + ant.get_speed() * dt
+            progress = self.ant_progress[ant] + ant.get_speed() * dt * self.ant_speed
             if progress >= 1.0:
                 self.ant_progress[ant] = 1.0
             else:
@@ -79,137 +141,94 @@ class Visualizer(QWidget):
                 all_finished = False
 
         if all_finished:
-            # Quand toutes les fourmis ont terminé leur déplacement,
-            # faire évoluer la civilisation d'un step complet.
             self.__civ.step()
-
-            best_path = self.__civ.get_best_path()  # Supposé renvoyer une liste de City
+            best_path = self.__civ.get_best_path()  # Renvoie une liste de City
             if best_path:
-                # Par exemple, on affiche les identifiants séparés par des flèches
-                self.best_path_text = "Current Best Path: " + " > ".join(
+                self.best_path_text = "Best Path: " + " > ".join(
                     str(city.get_id()) for city in best_path
                 )
             else:
                 self.best_path_text = "Best Path: N/A"
-
-            # Réinitialiser la progression pour toutes les fourmis
             for ant in self.ants:
                 self.ant_progress[ant] = 0.0
-            # Recalcule les temps de lancement pour le prochain cycle :
             self.start_time = time.time()
             self.ant_launch_time = {
                 ant: self.start_time + i * self.ant_launch_delta
                 for i, ant in enumerate(self.ants)
             }
 
-        self.update()  # Redessine la fenêtre.
+        self.update()  # Redessine la fenêtre
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-        painter.fillRect(self.rect(), QColor(50, 50, 50))  # Fond gris foncé
-
+        painter.fillRect(self.rect(), QColor(50, 50, 50))
         center = self.rect().center()
-        # Obtenir la liste des villes et calculer les positions via MDS
-        cities = self.__civ.get_cities()  # Liste d'objets City
-        layout = self.__civ.compute_layout()  # Tableau NumPy de forme (n,2)
+        cities = self.__civ.get_cities()
+        layout = self.__civ.compute_layout()
 
-        # Construire un dictionnaire associant chaque City à une position QPointF décalée par le centre
         node_positions = {}
         for i, city in enumerate(cities):
             pos = layout[i]
             node_positions[city] = QPointF(pos[0] + center.x(), pos[1] + center.y())
 
-        # Dessiner les routes (arêtes)
-        # Dessiner les routes (arêtes)
         edge_pen = QPen(QColor(255, 255, 255))
         edge_pen.setWidth(2)
         painter.setPen(edge_pen)
-
-        import math
-
-        # ... dans ta méthode paintEvent, dans la boucle sur les routes :
-
-        roads = self.__civ.get_roads()  # Liste d'objets Road
-        # Calcul du maximum de phéromone parmi toutes les routes
+        roads = self.__civ.get_roads()
         max_pheromone = max((road.get_pheromone() for road in roads), default=0)
-
         for road in roads:
             start_city, end_city = road.get_cities()
             start = node_positions[start_city]
             end = node_positions[end_city]
-
-            # Normaliser la phéromone
             ratio = road.get_pheromone() / max_pheromone if max_pheromone > 0 else 0
-
-            # Ajuster l'épaisseur de la route (par exemple, entre 2 et 8 pixels)
             thickness = 2 + ratio * 6
-
-            # Pour ratio=0, couleur blanche (255,255,255)
-            # Pour ratio=1, couleur cible #124559 (18, 69, 89)
+            # Interpoler entre blanc et #124559 (RGB: 18,69,89) pour la route
             r = int((1 - ratio) * 255 + ratio * 37)
             g = int((1 - ratio) * 255 + ratio * 110)
             b = int((1 - ratio) * 255 + ratio * 255)
             road_color = QColor(r, g, b)
-
             road_pen = QPen(road_color)
             road_pen.setWidthF(thickness)
             painter.setPen(road_pen)
             painter.drawLine(start, end)
 
-            # Calcul du point médian de l'arête
-            import math
+            if self.show_road_text:
+                mid_point = QPointF(
+                    (start.x() + end.x()) / 2, (start.y() + end.y()) / 2
+                )
+                offset_distance = 22
+                offset_vector = self.calc_perp_offset(
+                    start, end, offset_distance=offset_distance
+                )
+                text_pos = QPointF(
+                    mid_point.x() + offset_vector.x(), mid_point.y() + offset_vector.y()
+                )
 
-            # ... Dans votre boucle de dessin des routes, après avoir calculé le point d'affichage du texte :
-            # Calcul du point médian de l'arête
-            mid_point = QPointF((start.x() + end.x()) / 2, (start.y() + end.y()) / 2)
-            # On utilise calc_perp_offset avec un offset légèrement plus grand pour placer le texte "juste au-dessus"
-            offset_distance = 25
-            offset_vector = self.calc_perp_offset(
-                start, end, offset_distance=offset_distance
-            )
-            text_pos = QPointF(
-                mid_point.x() + offset_vector.x(), mid_point.y() + offset_vector.y()
-            )
-
-            # Préparation du texte
-            weight_text = str(road.get_weight())
-            pheromone_text = str(round(road.get_pheromone(), 3))
-            text = weight_text + " | " + pheromone_text
-
-            # Calculer l'angle de l'arête en degrés
-            angle = math.degrees(math.atan2(end.y() - start.y(), end.x() - start.x()))
-
-            # Ajuster l'angle pour éviter que le texte soit à l'envers :
-            if angle > 90 or angle < -90:
-                angle += 180
-
-            # Sauvegarder l'état du painter pour appliquer la transformation localement
-            painter.save()
-            # Déplacer l'origine au point où le texte doit être dessiné
-            painter.translate(text_pos)
-            # Faire pivoter le painter de l'angle ajusté
-            painter.rotate(angle)
-            # Définir la couleur du texte (ici, gris clair)
-            painter.setPen(QPen(QColor(230, 230, 230)))
-            painter.setFont(self.__road_font)
-            # Centrer le texte sur l'origine
-            fm = painter.fontMetrics()
-            text_width = fm.horizontalAdvance(text)
-            text_height = fm.height()
-            # Convertir les valeurs en entiers
-            painter.drawText(int(-text_width / 2), int(text_height / 2), text)
-            # Restaurer l'état du painter
-            painter.restore()
-
-            # Remettre le stylo par défaut pour les arêtes
+                painter.setFont(self.__road_font)
+                painter.setPen(QPen(QColor(230, 230, 230)))
+                weight_text = str(road.get_weight())
+                pheromone_text = str(round(road.get_pheromone(), 3))
+                text = weight_text + " | " + pheromone_text
+                angle = math.degrees(
+                    math.atan2(end.y() - start.y(), end.x() - start.x())
+                )
+                if angle > 90 or angle < -90:
+                    angle += 180
+                painter.save()
+                painter.translate(text_pos)
+                painter.rotate(angle)
+                fm = painter.fontMetrics()
+                text_width = fm.horizontalAdvance(text)
+                text_height = fm.height()
+                painter.drawText(int(-text_width / 2), int(text_height / 2), text)
+                painter.restore()
             painter.setPen(edge_pen)
 
-        # Dessiner les ants (fourmis)
-        ant_radius = 10
+        ant_radius = 8
         for ant in self.ants:
-            u = ant.get_current_city()  # Ville de départ (objet City)
-            v = ant.get_next_city()  # Ville d'arrivée (objet City)
+            u = ant.get_current_city()
+            v = ant.get_next_city()
             start = node_positions[u]
             end = node_positions[v]
             t = self.ant_progress[ant]
@@ -220,14 +239,19 @@ class Visualizer(QWidget):
             painter.setPen(Qt.NoPen)
             painter.drawEllipse(anim_pos, ant_radius, ant_radius)
 
-        # Dessiner les villes avec un contour blanc et afficher leur identifiant
         radius = 20
         border_width = 2
         for city, pos in node_positions.items():
-            painter.setBrush(QBrush(QColor(139, 0, 0)))  # Rouge foncé
+            if city == self.__civ.get_nest():
+                fill_color = QColor(0, 150, 0)  # Vert sombre pour le nid
+            elif city == self.__civ.get_food_source():
+                fill_color = QColor(200, 100, 10)  # Orange pour la source de nourriture
+            else:
+                fill_color = QColor(139, 0, 0)  # Rouge foncé par défaut
+            painter.setBrush(QBrush(fill_color))
             painter.setPen(QPen(QColor(255, 255, 255), border_width))
             painter.drawEllipse(pos, radius + border_width, radius + border_width)
-            painter.setBrush(QBrush(QColor(139, 0, 0)))
+            painter.setBrush(QBrush(fill_color))
             painter.setPen(Qt.NoPen)
             painter.drawEllipse(pos, radius, radius)
             painter.setFont(self.__city_font)
@@ -252,7 +276,6 @@ class Visualizer(QWidget):
             )
             painter.setPen(edge_pen)
 
-        # Dessiner le meilleur chemin en haut à gauche
         painter.setFont(self.__best_path_font)
         painter.setPen(QPen(QColor(230, 230, 230)))
         margin = 10

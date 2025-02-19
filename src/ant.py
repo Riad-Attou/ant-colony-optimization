@@ -13,7 +13,10 @@ class Ant:
         self.__current_city = start_city
         self.__next_city = None  # Updated by Civilization.step()
         self.__speed = 1.0
-        self.__color = QColor(100, 100, random.randint(150, 255))
+        self.__color_no_food = QColor(100, random.randint(240, 255), 100)
+        self.__color_with_food = QColor(
+            random.randint(150, 230), random.randint(90, 120), 10
+        )
         self.__explored_roads = []
         self.__cumulated_weights = 0
 
@@ -21,7 +24,10 @@ class Ant:
         return self.__id
 
     def get_color(self):
-        return self.__color
+        if self.__has_food:
+            return self.__color_with_food
+        else:
+            return self.__color_no_food
 
     def get_speed(self):
         return self.__speed
