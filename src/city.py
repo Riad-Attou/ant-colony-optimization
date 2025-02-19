@@ -11,6 +11,7 @@ class City:
 
     def add_road(self, road):
         self.__outgoing_roads.append(road)
+        return
 
     def get_neighbors(self):
         return [road.get_cities()[1] for road in self.__outgoing_roads]

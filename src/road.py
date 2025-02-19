@@ -17,11 +17,18 @@ class Road:
     def get_pheromone(self):
         return self.__pheromone
 
+    def add_pheromone(self, pheromone: float):
+        self.__pheromone += pheromone
+        return
+
     def get_cities(self):
         return self.__start_city, self.__end_city
 
     def evaporate_pheromone(self):
-        pass
+        return
+
+    def reverse(self):
+        return Road(self.__weight, self.__end_city, self.__start_city)
 
     def __str__(self):
         return f"Road ({self.__start_city.get_id()}, {self.__end_city.get_id()}):\n\tWeight: {self.__weight}\n\tPheromone: {self.__pheromone}"
