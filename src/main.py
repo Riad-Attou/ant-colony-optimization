@@ -131,14 +131,14 @@ def main(civ: Civilization):
 
 if __name__ == "__main__":
 
-    small_civ = get_small_civ()
-    small_civ.step()
-    main(small_civ)
+    # small_civ = get_small_civ()
+    # small_civ.step()
+    # main(small_civ)
 
     # big_civ = get_big_civ()
     # big_civ.step()
     # main(big_civ)
 
-    # really_big_civ = get_really_big_civ()
-    # really_big_civ.step()
-    # main(really_big_civ)
+    really_big_civ = get_really_big_civ()
+    really_big_civ.step()
+    main(really_big_civ)
