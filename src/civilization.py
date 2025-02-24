@@ -113,6 +113,9 @@ class Civilization:
         return random.choices(roads, weights=weights, k=1)[0]
 
     def step(self):
+        for road in self.__roads:
+            road.evaporate_pheromone()
+
         for ant in self.__ants:
             if not ant.has_food():
                 if ant.get_current_city().get_id() == self.get_food_source().get_id():
@@ -166,9 +169,6 @@ class Civilization:
                 ant.set_next_city(next_city)
 
                 ant.deposit_pheromone(self.find_reversed_road(next_road))
-
-        for road in self.__roads:
-            road.evaporate_pheromone()
 
         return
 
