@@ -9,18 +9,14 @@ from road import Road
 
 
 class Civilization:
-    def __init__(
-        self,
-        nest: City,
-        food_source: City,
-    ):
+    def __init__(self, nest: City, food_source: City, evaporation_rate: float):
         self.__cities = [nest, food_source]
         self.__roads = []
         self.__nest = nest
         self.__food_source = food_source
         self.__ants = []
-        self.__half_pheromone_time = 0
-
+        self.__half_pheromone_time = int(np.log(1 / 2) / np.log(1 - evaporation_rate))
+        self.__evaporation_rate = evaporation_rate
         self.steps = 0
 
         self.__scale_factor = 120  # 1 unité de poids correspond à 120 pixels
@@ -46,6 +42,9 @@ class Civilization:
     def get_ants(self):
         return self.__ants
 
+    def get_half_pheromone_time(self):
+        return self.__half_pheromone_time
+
     def add_city(self, city: City):
         self.__cities.append(city)
         return
@@ -68,6 +67,11 @@ class Civilization:
     def set_food_source(self, food_source: City):
         self.__food_source = food_source
         return
+
+    def halve_pheromone(self):
+        for road in self.__roads:
+            current_pheromone = road.get_pheromone()
+            road.set_pheromone(current_pheromone / 2)
 
     def create_ant_colony(self, ant_number: int):
         assert ant_number > 0
@@ -121,6 +125,9 @@ class Civilization:
 
     def step(self):
         self.steps += 1
+        if self.steps == self.__half_pheromone_time:
+            self.halve_pheromone()
+
         for road in self.__roads:
             road.evaporate_pheromone()
 

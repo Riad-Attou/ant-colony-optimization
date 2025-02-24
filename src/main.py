@@ -17,7 +17,7 @@ def get_small_civ():
 
     cities = [City(i) for i in range(4)]
 
-    civ = Civilization(cities[0], cities[-1])
+    civ = Civilization(cities[0], cities[-1], 0.05)
 
     for i in range(1, nb_cities - 1):
         civ.add_city(cities[i])
@@ -37,7 +37,7 @@ def get_big_civ():
 
     cities = [City(i) for i in range(nb_cities)]
 
-    civ = Civilization(cities[0], cities[-1])
+    civ = Civilization(cities[0], cities[-1], 0.05)
 
     for i in range(1, nb_cities - 1):
         civ.add_city(cities[i])
@@ -72,7 +72,7 @@ def get_really_big_civ():
     cities = [City(i) for i in range(nb_cities)]
 
     # Le nid est la première ville et la source de nourriture la dernière.
-    civ = Civilization(cities[0], cities[-1])
+    civ = Civilization(cities[0], cities[-1], 0.05)
 
     # Ajouter les villes intermédiaires
     for i in range(1, nb_cities - 1):
@@ -135,10 +135,10 @@ if __name__ == "__main__":
     # small_civ.step()
     # main(small_civ)
 
-    # big_civ = get_big_civ()
-    # big_civ.step()
-    # main(big_civ)
+    big_civ = get_big_civ()
+    big_civ.step()
+    main(big_civ)
 
-    really_big_civ = get_really_big_civ()
-    really_big_civ.step()
-    main(really_big_civ)
+    # really_big_civ = get_really_big_civ()
+    # really_big_civ.step()
+    # main(really_big_civ)

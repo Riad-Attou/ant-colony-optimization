@@ -4,7 +4,7 @@ from city import City
 class Road:
     def __init__(self, weight: float, start_city: City, end_city: City):
         self.__weight = weight
-        self.__pheromone = 0
+        self.__pheromone = 10
         self.__start_city = start_city
         self.__end_city = end_city
 
@@ -23,6 +23,9 @@ class Road:
 
     def get_cities(self):
         return self.__start_city, self.__end_city
+
+    def set_pheromone(self, pheromone: float):
+        self.__pheromone = pheromone
 
     def evaporate_pheromone(self):
         """rho à paramétrer"""
