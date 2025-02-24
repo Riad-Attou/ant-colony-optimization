@@ -25,6 +25,9 @@ class Road:
         return self.__start_city, self.__end_city
 
     def evaporate_pheromone(self):
+        """rho à paramétrer"""
+        rho = 0.2
+        self.__pheromone *= 1 - rho
         return
 
     def reverse(self):
