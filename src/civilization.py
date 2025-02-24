@@ -21,6 +21,8 @@ class Civilization:
         self.__ants = []
         self.__half_pheromone_time = 0
 
+        self.steps = 0
+
         self.__scale_factor = 120  # 1 unité de poids correspond à 120 pixels
 
     def get_cities(self):
@@ -118,6 +120,7 @@ class Civilization:
         return random.choices(roads, weights=weights, k=1)[0]
 
     def step(self):
+        self.steps += 1
         for road in self.__roads:
             road.evaporate_pheromone()
 

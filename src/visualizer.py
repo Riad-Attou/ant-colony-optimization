@@ -294,6 +294,7 @@ class Canvas(QOpenGLWidget):
 
         if all_finished:
             self.__civ.step()
+            print(f"step:{self.__civ.steps}")
             best_path = self.__civ.get_best_path()  # Renvoie une liste de City
             if best_path:
                 self.best_path_text = "Best Path: " + " > ".join(
