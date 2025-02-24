@@ -9,12 +9,17 @@ from road import Road
 
 
 class Civilization:
-    def __init__(self, nest: City, food_source: City):
+    def __init__(
+        self,
+        nest: City,
+        food_source: City,
+    ):
         self.__cities = [nest, food_source]
         self.__roads = []
         self.__nest = nest
         self.__food_source = food_source
         self.__ants = []
+        self.__half_pheromone_time = 0
 
         self.__scale_factor = 120  # 1 unité de poids correspond à 120 pixels
 
