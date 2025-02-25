@@ -132,9 +132,9 @@ def main(civ: Civilization, edition_mode):
 
 if __name__ == "__main__":
 
-    small_civ = get_small_civ()
-    small_civ.step()
-    main(small_civ, False)
+    # small_civ = get_small_civ()
+    # small_civ.step()
+    # main(small_civ, False)
 
     # big_civ = get_big_civ()
     # big_civ.step()
@@ -144,9 +144,9 @@ if __name__ == "__main__":
     # really_big_civ.step()
     # main(really_big_civ, False)
 
-    # nest = City(0, QPointF(500, 400))
-    # food_source = City(1, QPointF(1800, 400))
-    # civ = Civilization(nest, food_source, 0.05, 1)
-    # civ.add_road(1300 / 1500, nest, food_source)
-    # civ.create_ant_colony(10, 0.5, 0.5, 0.5)
-    # main(civ, True)
+    nest = City(0, QPointF(500, 400))
+    food_source = City(1, QPointF(1800, 400))
+    civ = Civilization(nest, food_source, 0.05, 1)
+    civ.add_road(1300 / 1500, nest, food_source)
+    civ.create_ant_colony(10, 0.5, 0.5, 0.5)
+    main(civ, True)

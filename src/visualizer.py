@@ -1361,6 +1361,9 @@ class Canvas(BaseCanvas):
 class SimulationCanvas(BaseCanvas):
     def __init__(self, civ, parent=None):
         super().__init__(civ, parent)
+        # Attributs spécifiques à la gestion par clic
+        self.current_road_start = None
+        self.has_started = False
 
     def get_layout(self):
         if hasattr(self.civ, "compute_free_layout"):
@@ -1374,3 +1377,49 @@ class SimulationCanvas(BaseCanvas):
             pos = layout[i]
             node_positions[city] = QPointF(pos[0], pos[1])
         return node_positions
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            pos = event.pos()
+            # Si aucune ville n'est proche, en créer une nouvelle
+            if self.find_city_near(pos) is None:
+                new_city = City(len(self.civ.get_cities()))
+                new_city.set_position(pos)
+                self.civ.add_city(new_city)
+            # Recalculer le layout avec la nouvelle ville
+            self.cached_layout = self.civ.compute_free_layout()
+            self.update()
+        elif event.button() == Qt.RightButton:
+            pos = event.pos()
+            clicked_city = self.find_city_near(pos)
+            if clicked_city:
+                if self.current_road_start is None:
+                    # Première sélection : stocker la ville de départ
+                    self.current_road_start = clicked_city
+                else:
+                    # Si c'est une ville différente, créer une route
+                    if clicked_city != self.current_road_start:
+                        p1 = self.current_road_start.get_position()
+                        p2 = clicked_city.get_position()
+                        dist = round(
+                            math.sqrt((p1.x() - p2.x()) ** 2 + (p1.y() - p2.y()) ** 2),
+                            2,
+                        )
+                        self.civ.add_road(
+                            dist / 1500, self.current_road_start, clicked_city
+                        )
+                        # Faire de la ville cliquée le nouveau point de départ
+                        self.current_road_start = clicked_city
+                    self.cached_layout = self.civ.compute_free_layout()
+                    self.update()
+
+    def find_city_near(self, pos, radius=20):
+        """Recherche une ville dont la position est proche de 'pos'."""
+        for city in self.civ.get_cities():
+            city_pos = city.get_position()
+            if (
+                math.sqrt((city_pos.x() - pos.x()) ** 2 + (city_pos.y() - pos.y()) ** 2)
+                < radius
+            ):
+                return city
+        return None
