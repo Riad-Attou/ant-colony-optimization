@@ -64,7 +64,7 @@ class Civilization:
         start_city: City,
         end_city: City,
     ):
-        road = Road(weight, start_city, end_city, self.__initial_pheromone)
+        road = Road(round(weight, 2), start_city, end_city, self.__initial_pheromone)
         self.__roads.append(road)
         start_city = self.get_city_by_id(road.get_cities()[0].get_id())
         start_city.add_road(road)
