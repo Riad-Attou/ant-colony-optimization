@@ -1,10 +1,18 @@
 class City:
-    def __init__(self, id: int):
+    def __init__(self, id: int, position=None):
         self.__id = id
         self.__outgoing_roads = []
+        self.__position = position
 
     def get_id(self):
         return self.__id
+
+    def get_position(self):
+        return self.__position
+
+    def set_position(self, position):
+        self.__position = position
+        return
 
     def get_roads(self):
         return self.__outgoing_roads

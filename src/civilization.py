@@ -50,7 +50,11 @@ class Civilization:
         return
 
     def add_road(self, weight: float, start_city: City, end_city: City):
-        road = Road(weight, start_city, end_city)
+        road = Road(round(weight, 2), start_city, end_city)
+        if road.get_id() in [
+            self.__roads[i].get_id() for i in range(len(self.__roads))
+        ]:
+            return
         self.__roads.append(road)
         start_city = self.get_city_by_id(road.get_cities()[0].get_id())
         start_city.add_road(road)
@@ -96,6 +100,15 @@ class Civilization:
             D[j, i] = distance  # Supposons que les routes sont bidirectionnelles
         return D
 
+    def compute_free_layout(self):
+        # Retourne un tableau numpy des positions définies pour chaque ville
+        return np.array(
+            [
+                [city.get_position().x(), city.get_position().y()]
+                for city in self.get_cities()
+            ]
+        )
+
     def compute_layout(self):
         D = self.get_distance_matrix()
         mds = MDS(n_components=2, dissimilarity="precomputed", random_state=42)
@@ -125,67 +138,85 @@ class Civilization:
 
     def step(self):
         self.steps += 1
+        print(self.steps)
+
         if self.steps == self.__half_pheromone_time:
             self.halve_pheromone()
 
+        # Évaporation des phéromones
         for road in self.__roads:
             road.evaporate_pheromone()
 
         for ant in self.__ants:
+            # RECHERCHE DE NOURRITURE
             if not ant.has_food():
+                # Si la fourmi est à la source de nourriture
                 if ant.get_current_city().get_id() == self.get_food_source().get_id():
                     ant.set_has_food(True)
                     ant.set_cumulated_weights(
-                        sum(
-                            [
-                                ant.get_explored_roads()[i].get_weight()
-                                for i in range(len(ant.get_explored_roads()))
-                            ]
-                        )
+                        sum([road.get_weight() for road in ant.get_explored_roads()])
                     )
 
-                if ant.get_next_city() is None:
-                    outgoing_roads = ant.get_current_city().get_roads()
-                    if not outgoing_roads:
-                        continue
-                    next_road = self.weighted_choice(outgoing_roads)
-                    ant.add_explored_road(next_road)
-                    next_city = next_road.get_cities()[1]
-                    ant.set_next_city(next_city)
+                    # CHANGEMENT ICI: Commencer immédiatement le chemin de retour
+                    if ant.get_explored_roads():
+                        next_road = ant.get_explored_roads()[-1].reverse()
+                        next_city = next_road.get_cities()[1]
+                        ant.set_next_city(next_city)
                     continue
 
-                else:
+                # Si la fourmi a une destination, elle s'y déplace
+                if ant.get_next_city() is not None:
                     ant.set_current_city(ant.get_next_city())
+                    ant.set_next_city(None)  # Réinitialiser pour le prochain choix
 
+                # Choisir la prochaine ville à visiter
                 outgoing_roads = ant.get_current_city().get_roads()
                 if not outgoing_roads:
                     continue
+
                 next_road = self.weighted_choice(outgoing_roads)
                 ant.add_explored_road(next_road)
                 next_city = next_road.get_cities()[1]
                 ant.set_next_city(next_city)
 
+            # RETOUR AU NID
             else:
+                # Si la fourmi est au nid
                 if ant.get_current_city().get_id() == self.get_nest().get_id():
                     ant.set_has_food(False)
                     ant.set_cumulated_weights(0)
 
-                ant.set_current_city(ant.get_next_city())
-                reversed_roads = [
-                    ant.get_explored_roads()[i].reverse()
-                    for i in range(len(ant.get_explored_roads()))
-                ]
-                if not reversed_roads:
+                    # CHANGEMENT ICI: Choisir immédiatement une nouvelle destination
+                    outgoing_roads = ant.get_current_city().get_roads()
+                    if outgoing_roads:
+                        next_road = self.weighted_choice(outgoing_roads)
+                        ant.add_explored_road(next_road)
+                        next_city = next_road.get_cities()[1]
+                        ant.set_next_city(next_city)
                     continue
-                next_road = reversed_roads[-1]
-                reversed_roads.pop()
-                ant.pop_explored_roads()
-                next_city = next_road.get_cities()[1]
-                ant.set_next_city(next_city)
 
-                ant.deposit_pheromone(self.find_reversed_road(next_road))
+                # Si la fourmi a une destination, elle s'y déplace
+                if ant.get_next_city() is not None:
+                    ant.set_current_city(ant.get_next_city())
 
-        return
+                    # Déposer des phéromones sur la route parcourue
+                    if ant.get_explored_roads():
+                        last_road = ant.get_explored_roads()[-1]
+                        reversed_road = last_road.reverse()
+                        original_road = self.find_reversed_road(reversed_road)
+                        if original_road:
+                            ant.deposit_pheromone(original_road)
+
+                    ant.set_next_city(None)  # Réinitialiser pour le prochain choix
+
+                # Choisir la prochaine ville pour continuer le retour
+                if ant.get_explored_roads():
+                    last_road = (
+                        ant.get_explored_roads().pop()
+                    )  # Retirer la dernière route
+                    next_road = last_road.reverse()
+                    next_city = next_road.get_cities()[1]
+                    ant.set_next_city(next_city)
 
     def get_best_path(self):
         """

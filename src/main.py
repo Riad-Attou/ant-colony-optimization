@@ -1,5 +1,6 @@
 import sys
 
+from PyQt5.QtCore import QPointF
 from PyQt5.QtGui import QSurfaceFormat
 from PyQt5.QtWidgets import QApplication
 
@@ -27,7 +28,7 @@ def get_small_civ():
     civ.add_road(5.0, cities[1], cities[3])
     civ.add_road(5.0, cities[2], cities[3])
 
-    civ.create_ant_colony(20)
+    civ.create_ant_colony(5)
 
     return civ
 
@@ -121,9 +122,9 @@ def get_really_big_civ():
     return civ
 
 
-def main(civ: Civilization):
+def main(civ: Civilization, edition_mode):
     app = QApplication(sys.argv)
-    window = Visualizer(civ)
+    window = Visualizer(civ, edition_mode)
     window.showMaximized()
 
     sys.exit(app.exec_())
@@ -131,14 +132,21 @@ def main(civ: Civilization):
 
 if __name__ == "__main__":
 
-    # small_civ = get_small_civ()
-    # small_civ.step()
-    # main(small_civ)
+    small_civ = get_small_civ()
+    small_civ.step()
+    main(small_civ, False)
 
-    big_civ = get_big_civ()
-    big_civ.step()
-    main(big_civ)
+    # big_civ = get_big_civ()
+    # big_civ.step()
+    # main(big_civ)
 
     # really_big_civ = get_really_big_civ()
     # really_big_civ.step()
-    # main(really_big_civ)
+    # main(really_big_civ, False)
+
+    # nest = City(0, QPointF(50, 400))
+    # food_source = City(1, QPointF(1800, 400))
+    # civ = Civilization(nest, food_source, 0.05)
+    # civ.add_road(1750 / 1500, nest, food_source)
+    # civ.create_ant_colony(10)
+    # main(civ, True)
