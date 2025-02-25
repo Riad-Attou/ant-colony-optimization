@@ -549,7 +549,7 @@ class Canvas2(QOpenGLWidget):
         self.add_button = QPushButton("Ajouter")
         self.add_button.setFixedSize(100, 30)
         button_layout.addWidget(self.add_button, alignment=Qt.AlignLeft)
-        self.add_button.clicked.connect(self.compose_colont_ants)
+        self.add_button.clicked.connect(self.compose_colony_ants)
 
         # Bouton "Valider"
         self.validate_button = QPushButton("Valider")
@@ -861,7 +861,7 @@ class Canvas2(QOpenGLWidget):
 
         self.update()  # Redessine la fenêtre
 
-    def compose_colont_ants(self):
+    def compose_colony_ants(self):
         if not self.first_composition_done:
             self.__civ.reset_ants()
             self.first_composition_done = True  # Marquer comme exécuté
