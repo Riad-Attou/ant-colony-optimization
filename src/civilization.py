@@ -9,7 +9,13 @@ from road import Road
 
 
 class Civilization:
-    def __init__(self, nest: City, food_source: City, evaporation_rate: float):
+    def __init__(
+        self,
+        nest: City,
+        food_source: City,
+        evaporation_rate: float,
+        initial_pheromone: float,
+    ):
         self.__cities = [nest, food_source]
         self.__roads = []
         self.__nest = nest
@@ -18,7 +24,7 @@ class Civilization:
         self.__half_pheromone_time = int(np.log(1 / 2) / np.log(1 - evaporation_rate))
         self.__evaporation_rate = evaporation_rate
         self.steps = 0
-
+        self.__initial_pheromone = initial_pheromone
         self.__scale_factor = 120  # 1 unité de poids correspond à 120 pixels
 
     def get_cities(self):
@@ -45,12 +51,20 @@ class Civilization:
     def get_half_pheromone_time(self):
         return self.__half_pheromone_time
 
+    def get_initial_pheromone(self):
+        return self.__initial_pheromone
+
     def add_city(self, city: City):
         self.__cities.append(city)
         return
 
-    def add_road(self, weight: float, start_city: City, end_city: City):
-        road = Road(weight, start_city, end_city)
+    def add_road(
+        self,
+        weight: float,
+        start_city: City,
+        end_city: City,
+    ):
+        road = Road(weight, start_city, end_city, self.__initial_pheromone)
         self.__roads.append(road)
         start_city = self.get_city_by_id(road.get_cities()[0].get_id())
         start_city.add_road(road)
@@ -68,16 +82,26 @@ class Civilization:
         self.__food_source = food_source
         return
 
+    def set_initial_pheromone(self, new_initial_pheronome: float):
+        self.__initial_pheromone = new_initial_pheronome
+
     def halve_pheromone(self):
         for road in self.__roads:
             current_pheromone = road.get_pheromone()
             road.set_pheromone(current_pheromone / 2)
 
-    def create_ant_colony(self, ant_number: int):
+    def create_ant_colony(
+        self, ant_number: int, alpha: float, beta: float, gamma: float
+    ):
         assert ant_number > 0
         for i in range(ant_number):
-            ant = Ant(i, 0.5, 0.5, 0.5, self.__nest)
+            ant = Ant(i + len(self.get_ants()), alpha, beta, gamma, self.__nest)
             self.add_ants(ant)
+        return
+
+    def reset_ants(self):
+        # Vider la liste des fourmis
+        self.__ants = []
         return
 
     def get_distance_matrix(self):
@@ -122,6 +146,12 @@ class Civilization:
             return random.choice(roads)
         # random.choices retourne une liste, on prend le premier élément
         return random.choices(roads, weights=weights, k=1)[0]
+
+    def migration(self):
+        alpha = random.uniform(-5, 5)
+        beta = random.uniform(-5, 5)
+        gamma = random.uniform(-5, 5)
+        self.create_ant_colony(self, 1, alpha, beta, gamma)
 
     def step(self):
         self.steps += 1

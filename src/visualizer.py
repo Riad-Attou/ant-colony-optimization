@@ -5,8 +5,14 @@ from PyQt5.QtCore import QPointF, Qt, QTimer
 from PyQt5.QtGui import QBrush, QColor, QFont, QIcon, QPainter, QPen
 from PyQt5.QtWidgets import (
     QCheckBox,
+    QColorDialog,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
     QLabel,
+    QLineEdit,
     QOpenGLWidget,
+    QPushButton,
     QSlider,
     QVBoxLayout,
     QWidget,
@@ -98,9 +104,9 @@ class Canvas(QOpenGLWidget):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.updateAnimation)
         self.timer.start(16)  # environ 60 FPS
-
         self.start_time = time.time()
         self.ant_launch_delta = self.ant_speed * 0.04  # délai entre lancements
+
         self.ant_launch_time = {
             ant: self.start_time + i * self.ant_launch_delta
             for i, ant in enumerate(self.ants)
@@ -110,6 +116,184 @@ class Canvas(QOpenGLWidget):
 
         # Propriété pour afficher ou masquer le texte sur les routes
         self.show_road_text = True
+
+        self.first_composition_done = False
+        # Initialisation des widgets d'entrée
+        self.init_input_widgets()
+
+    def init_input_widgets(self):
+        """Initialise les widgets pour la saisie des paramètres de fourmis"""
+
+        # --- 1) Création du QGroupBox pour tout regrouper ---
+        self.input_group = QGroupBox("Paramètres des Fourmis", self)
+        self.input_group.setGeometry(
+            100, 100, 350, 400
+        )  # Position et taille du group box
+        self.input_group.setStyleSheet(
+            """
+            QGroupBox {
+                background-color: grey;    /* Couleur de fond */
+                border-radius: 10px;
+                padding: 10px;
+                font-family: Arial;       /* Police par défaut pour le contenu */
+                font-size: 20px;          /* Taille de police du contenu */
+            }
+            QGroupBox::title {
+                font-size: 30px;          /* Titre plus grand */
+                font-weight: bold;        /* Titre en gras */
+                subcontrol-origin: margin;
+                subcontrol-position: top center;  /* Centre le titre */
+                color: #2c3e50;           /* Couleur du titre */
+                font-family: 'Arial';     /* Police (peut être différente du contenu) */
+            }
+            """
+        )
+
+        # Layout principal vertical du group box
+        main_layout = QVBoxLayout(self.input_group)
+
+        # --- 2) Champs de saisie avec QFormLayout pour un alignement vertical ---
+        form_layout = QFormLayout()
+
+        self.size_input = QLineEdit()
+        self.gamma_input = QLineEdit()
+        self.alpha_input = QLineEdit()
+        self.beta_input = QLineEdit()
+
+        # Fixe la même taille pour tous les QLineEdit
+        for line_edit in (
+            self.size_input,
+            self.gamma_input,
+            self.alpha_input,
+            self.beta_input,
+        ):
+            line_edit.setFixedWidth(120)
+
+        # Ajoute chaque champ (label + input) dans le FormLayout
+        form_layout.addRow(QLabel("Nombre de fourmis :"), self.size_input)
+        form_layout.addRow(QLabel("Gamma :"), self.gamma_input)
+        form_layout.addRow(QLabel("Alpha :"), self.alpha_input)
+        form_layout.addRow(QLabel("Beta :"), self.beta_input)
+
+        main_layout.addLayout(form_layout)
+
+        # --- 3) Bouton "Choisir une couleur" et affichage circulaire de la couleur ---
+        color_layout = QHBoxLayout()
+
+        self.color_button = QPushButton("Choisir une couleur")
+        self.color_button.setFixedSize(150, 30)
+        self.color_button.clicked.connect(self.choose_color)
+        color_layout.addWidget(self.color_button, alignment=Qt.AlignLeft)
+
+        # Cercle pour afficher la couleur choisie
+        self.color_display = QLabel()
+        self.color_display.setFixedSize(40, 40)
+        # Pour un cercle parfait, la valeur de border-radius doit être la moitié de la taille
+        self.color_display.setStyleSheet(
+            "background-color: white; border: 1px solid black; border-radius: 20px;"
+        )
+
+        # Ajoute le bouton et le cercle dans un layout horizontal (sous les champs)
+        color_layout.addWidget(self.color_button)
+        color_layout.addWidget(self.color_display)
+        main_layout.addLayout(color_layout)
+
+        # --- 1) Layout horizontal pour la vitesse des fourmis (slider + label) ---
+        speed_layout = QHBoxLayout()
+
+        self.speed_label = QLabel("Ant Speed: 1", self)
+        self.speed_label.setStyleSheet("color: white;")
+
+        self.speed_slider = QSlider(Qt.Horizontal, self)
+        self.speed_slider.setMinimum(0)
+        self.speed_slider.setMaximum(30)
+        self.speed_slider.setValue(1)
+        self.speed_slider.setTickInterval(2)
+        self.speed_slider.setTickPosition(QSlider.TicksBelow)
+        self.speed_slider.valueChanged.connect(self.updateAntSpeed)
+
+        speed_layout.addWidget(self.speed_label)
+        speed_layout.addWidget(self.speed_slider)
+        speed_layout.setAlignment(Qt.AlignCenter)  # Aligner à droite
+        main_layout.addLayout(speed_layout)
+
+        button_layout = QHBoxLayout()
+        # Bouton "Ajouter"
+        self.add_button = QPushButton("Ajouter")
+        self.add_button.setFixedSize(100, 30)
+        button_layout.addWidget(self.add_button, alignment=Qt.AlignLeft)
+        self.add_button.clicked.connect(self.compose_colont_ants)
+
+        # Bouton "Valider"
+        self.validate_button = QPushButton("Valider")
+        self.validate_button.setFixedSize(100, 30)
+        button_layout.addWidget(self.validate_button, alignment=Qt.AlignRight)
+        self.validate_button.clicked.connect(self.start_animation_after_composition)
+
+        # Ajouter le layout horizontal au layout principal
+        main_layout.addLayout(button_layout)
+
+        # --- 5) Application des styles généraux éventuels ---
+        self.apply_styles()
+
+    def updateAntSpeed(self, value):
+        """Met à jour le texte du label et la vitesse des fourmis"""
+        self.speed_label.setText(f"Ant Speed: {value}")
+        self.setAntSpeed(value)
+
+    def create_input(self, label_text, x, y):
+        """
+        Si vous souhaitez conserver cette méthode pour créer des champs,
+        vous pouvez l'adapter pour ne plus utiliser setGeometry(),
+        et retourner simplement un widget (label + lineedit) dans un layout.
+        """
+        label = QLabel(label_text, self)
+        input_field = QLineEdit(self)
+        input_field.setFixedWidth(120)
+
+        # Layout horizontal (label + champ)
+        row_layout = QHBoxLayout()
+        row_layout.addWidget(label)
+        row_layout.addWidget(input_field)
+
+        # Container
+        container = QWidget(self)
+        container.setLayout(row_layout)
+
+        return container
+
+    def choose_color(self):
+        """Ouvre un color picker et applique la couleur sélectionnée"""
+        color = QColorDialog.getColor()
+        if color.isValid():
+            self.color_display.setStyleSheet(
+                f"background-color: {color.name()}; "
+                "border: 1px solid black; "
+                "border-radius: 15px;"
+            )
+
+    def apply_styles(self):
+        """Applique un style global aux widgets (si nécessaire)"""
+        self.setStyleSheet(
+            """
+            QLabel {
+                font-family: "Arial";
+                font-size: 20px;
+                color: white;  /* Exemple : texte blanc */
+            }
+            QLineEdit {
+                border: 2px solid gray;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QPushButton {
+                background-color: #2ecc71;
+                color: white;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            """
+        )
 
     # Méthode de configuration OpenGL
     def initializeGL(self):
@@ -150,8 +334,19 @@ class Canvas(QOpenGLWidget):
             start_city, end_city = road.get_cities()
             start = node_positions[start_city]
             end = node_positions[end_city]
-            ratio = road.get_pheromone() / max_pheromone if max_pheromone > 0 else 0
-            thickness = 2 + ratio * 8
+            ratio = max(
+                (
+                    (
+                        road.get_pheromone()
+                        - min(road.get_pheromone(), self.__civ.get_initial_pheromone())
+                    )
+                    / (max_pheromone - self.__civ.get_initial_pheromone())
+                    if max_pheromone > 0
+                    else 0
+                ),
+                0,
+            )
+            thickness = 2 + ratio * 10
             r = int((1 - ratio) * 255 + ratio * 37)
             g = int((1 - ratio) * 255 + ratio * 110)
             b = int((1 - ratio) * 255 + ratio * 255)
@@ -311,3 +506,54 @@ class Canvas(QOpenGLWidget):
             }
 
         self.update()  # Redessine la fenêtre
+
+    def compose_colont_ants(self):
+        if not self.first_composition_done:
+            self.__civ.reset_ants()
+            self.first_composition_done = True  # Marquer comme exécuté
+        try:
+            colony_size = int(self.size_input.text())
+            alpha = float(self.alpha_input.text())
+            gamma = float(self.gamma_input.text())
+            beta = float(self.beta_input.text())
+            self.__civ.create_ant_colony(colony_size, alpha, gamma, beta)
+        except ValueError:
+            self.result_label.setText("Veuillez entrer des valeurs valides")
+
+    def start_animation_after_composition(self):
+        self.ants = self.__civ.get_ants()
+        colony_size = len(self.ants)
+        new_initial_pheromone = colony_size / 1000
+        # Réinitialiser les pheromones
+        self.__civ.set_initial_pheromone(new_initial_pheromone)
+        for road in self.__civ.get_roads():
+            road.reset_pheromone(self.__civ.get_initial_pheromone())
+        # Réinitialiser le compteur d'étapes de la civilisation
+        self.__civ.steps = 0
+
+        # Mise à jour des structures d'animation
+        self.ant_progress = {ant: 0.0 for ant in self.ants}
+
+        # Réinitialiser les variables de temps
+        self.start_time = time.time()
+        self.last_update = time.time()
+
+        # Recalculer les temps de lancement
+        self.ant_launch_delta = self.ant_speed * 0.04
+        self.ant_launch_time = {
+            ant: self.start_time + i * self.ant_launch_delta
+            for i, ant in enumerate(self.ants)
+        }
+
+        # Forcer le recalcul du meilleur chemin
+        self.__civ.step()
+        self.best_path_text = "Best Path: N/A"
+
+        # Forcer la mise à jour de l'interface
+        self.cached_layout = None  # Recalcul du layout si nécessaire
+
+        self.first_composition_done = False
+        for ant in self.ants:
+            print(ant)
+        print(self.ant_launch_time)
+        self.update()

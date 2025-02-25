@@ -19,6 +19,8 @@ class Ant:
         )
         self.__explored_roads = []
         self.__cumulated_weights = 0
+        self.__food_quantity = 0
+        self.__road_exploration_count = {}
 
     def get_id(self):
         return self.__id
