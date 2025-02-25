@@ -178,6 +178,7 @@ class Civilization:
             if not ant.has_food():
                 # Si la fourmi est à la source de nourriture
                 if ant.get_current_city().get_id() == self.get_food_source().get_id():
+                    print("hey", ant.get_next_city())
                     ant.set_has_food(True)
                     ant.set_cumulated_weights(
                         sum([road.get_weight() for road in ant.get_explored_roads()])
@@ -197,7 +198,11 @@ class Civilization:
 
                 # Choisir la prochaine ville à visiter
                 outgoing_roads = ant.get_current_city().get_roads()
-                if not outgoing_roads:
+                if (
+                    not outgoing_roads
+                    or ant.get_current_city().get_id()
+                    == self.get_food_source().get_id()
+                ):
                     continue
 
                 next_road = self.weighted_choice(outgoing_roads)
@@ -243,6 +248,7 @@ class Civilization:
                     next_road = last_road.reverse()
                     next_city = next_road.get_cities()[1]
                     ant.set_next_city(next_city)
+        print(self.__ants[0].get_next_city())
 
     def get_best_path(self):
         """

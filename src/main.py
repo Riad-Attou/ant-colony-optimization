@@ -147,6 +147,6 @@ if __name__ == "__main__":
     nest = City(0, QPointF(500, 400))
     food_source = City(1, QPointF(1800, 400))
     civ = Civilization(nest, food_source, 0.05, 1)
-    civ.add_road(1300 / 1500, nest, food_source)
+    # civ.add_road(1300 / 1500, nest, food_source)
     civ.create_ant_colony(10, 0.5, 0.5, 0.5)
     main(civ, True)
