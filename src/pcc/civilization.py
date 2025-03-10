@@ -3,9 +3,9 @@ import random
 import numpy as np
 from sklearn.manifold import MDS
 
-from ant import Ant
-from city import City
-from road import Road
+from pcc.ant import Ant
+from pcc.city import City
+from pcc.road import Road
 
 
 class Civilization:
@@ -236,7 +236,6 @@ class Civilization:
             if not ant.has_food():
                 # Si la fourmi est à la source de nourriture
                 if ant.get_current_city().get_id() == self.get_food_source().get_id():
-                    print("hey", ant.get_next_city())
                     ant.set_has_food(True)
                     ant.set_food_quatity()
                     ant.set_cumulated_weights(
@@ -319,7 +318,6 @@ class Civilization:
                     next_road = last_road.reverse()
                     next_city = next_road.get_cities()[1]
                     ant.set_next_city(next_city)
-        print(self.__ants[0].get_next_city())
 
     def get_best_path(self):
         """
@@ -366,7 +364,7 @@ class Civilization:
             self.step()
         threshold_genetic_algo = self.__threshold_genetic_algo
         while threshold_genetic_algo > 0:
-            # print("iteration : ", threshold_genetic_algo)
+            print("iteration : ", threshold_genetic_algo)
             self.genetic_algo()
             for ant in self.__ants:
                 ant.reset_ant()

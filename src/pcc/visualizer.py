@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from city import City
+from pcc.city import City
 
 
 class Visualizer(QWidget):

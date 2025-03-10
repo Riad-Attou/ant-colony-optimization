@@ -1,4 +1,4 @@
-from city import City
+from tsp.city import City
 
 
 class Road:
