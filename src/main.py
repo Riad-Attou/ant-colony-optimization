@@ -159,9 +159,9 @@ if __name__ == "__main__":
     # civ.create_ant_colony(10, 0.5, 0.5, 0.5)
     # main(civ, True)
 
-    # big_civ = get_big_civ()
-    # for i in range(200):
-    #     big_civ.step()
-    # big_civ = get_big_civ()
-    # big_civ.genetic_algo_application()
-    # main(big_civ, False)
+    big_civ = get_big_civ()
+    for i in range(200):
+        big_civ.step()
+    big_civ = get_big_civ()
+    big_civ.genetic_algo_application()
+    main(big_civ, False)

@@ -1407,8 +1407,7 @@ class SimulationCanvas(BaseCanvas):
                         self.civ.add_road(
                             dist / 1500, self.current_road_start, clicked_city
                         )
-                        # Faire de la ville cliquée le nouveau point de départ
-                        self.current_road_start = clicked_city
+                        self.current_road_start = None
                     self.cached_layout = self.civ.compute_free_layout()
                     self.update()
 
