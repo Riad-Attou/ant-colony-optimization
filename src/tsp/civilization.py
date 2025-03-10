@@ -1,11 +1,10 @@
 import random
 
 import numpy as np
+from ant import Ant
+from city import City
+from road import Road
 from sklearn.manifold import MDS
-
-from tsp.ant import Ant
-from tsp.city import City
-from tsp.road import Road
 
 
 class Civilization:

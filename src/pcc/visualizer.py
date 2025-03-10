@@ -1,6 +1,7 @@
 import math
 import time
 
+from city import City
 from PyQt5.QtCore import QPointF, Qt, QTimer
 from PyQt5.QtGui import QBrush, QColor, QFont, QIcon, QPainter, QPen, QPolygonF
 from PyQt5.QtWidgets import (
@@ -17,8 +18,6 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-
-from pcc.city import City
 
 
 class Visualizer(QWidget):

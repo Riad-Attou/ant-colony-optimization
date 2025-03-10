@@ -1,12 +1,11 @@
 import sys
 
+from city import City
+from civilization import Civilization
 from PyQt5.QtCore import QPointF
 from PyQt5.QtGui import QSurfaceFormat
 from PyQt5.QtWidgets import QApplication
-
-from tsp.city import City
-from tsp.civilization import Civilization
-from tsp.visualizer import Visualizer
+from visualizer import Visualizer
 
 fmt = QSurfaceFormat()
 fmt.setSamples(8)
