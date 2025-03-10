@@ -1,11 +1,10 @@
 import random
 
 import numpy as np
-from sklearn.manifold import MDS
-
 from ant import Ant
 from city import City
 from road import Road
+from sklearn.manifold import MDS
 
 
 class Civilization:
@@ -244,10 +243,10 @@ class Civilization:
 
                     # CHANGEMENT ICI: Commencer immédiatement le chemin de retour
                     if ant.get_explored_roads():
-                        for road in ant.get_explored_roads():
-                            if road not in ant.get_explored_roads_count():
-                                ant.add_explored_roads_count(road)
-                            ant.increment_explored_roads(road)
+                        # for road in ant.get_explored_roads():
+                        #     if road not in ant.get_explored_roads_count():
+                        #         ant.add_explored_roads_count(road)
+                        #     ant.increment_explored_roads(road)
                         if (
                             tuple(ant.get_explored_roads())
                             not in ant.get_explored_roads_count()
@@ -318,7 +317,6 @@ class Civilization:
                     next_road = last_road.reverse()
                     next_city = next_road.get_cities()[1]
                     ant.set_next_city(next_city)
-        print(self.__ants[0].get_next_city())
 
     def get_best_path(self):
         """
@@ -365,7 +363,7 @@ class Civilization:
             self.step()
         threshold_genetic_algo = self.__threshold_genetic_algo
         while threshold_genetic_algo > 0:
-            # print("iteration : ", threshold_genetic_algo)
+            print("iteration : ", threshold_genetic_algo)
             self.genetic_algo()
             for ant in self.__ants:
                 ant.reset_ant()

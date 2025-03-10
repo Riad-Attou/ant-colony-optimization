@@ -1,11 +1,10 @@
 import sys
 
+from city import City
+from civilization import Civilization
 from PyQt5.QtCore import QPointF
 from PyQt5.QtGui import QSurfaceFormat
 from PyQt5.QtWidgets import QApplication
-
-from city import City
-from civilization import Civilization
 from visualizer import Visualizer
 
 fmt = QSurfaceFormat()
@@ -159,9 +158,6 @@ if __name__ == "__main__":
     # civ.create_ant_colony(10, 0.5, 0.5, 0.5)
     # main(civ, True)
 
-    big_civ = get_big_civ()
-    for i in range(200):
-        big_civ.step()
     big_civ = get_big_civ()
     big_civ.genetic_algo_application()
     main(big_civ, False)
