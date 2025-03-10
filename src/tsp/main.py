@@ -17,7 +17,7 @@ def get_small_civ():
 
     cities = [City(i) for i in range(4)]
 
-    civ = Civilization(cities[0], cities[-1], 0.05, 0.1, 0.2, 0.2, 0.2)
+    civ = Civilization(cities[0], 0.05, 0.1, 0.2, 0.2, 0.2)
 
     for i in range(1, nb_cities - 1):
         civ.add_city(cities[i])
@@ -37,7 +37,7 @@ def get_big_civ():
 
     cities = [City(i) for i in range(nb_cities)]
 
-    civ = Civilization(cities[0], cities[-1], 0.05, 0.1, 0.7, 0.2, 0.5)
+    civ = Civilization(cities[0], 0.05, 0.1, 0.7, 0.2, 0.5)
 
     for i in range(1, nb_cities - 1):
         civ.add_city(cities[i])
@@ -80,7 +80,7 @@ def get_really_big_civ():
     cities = [City(i) for i in range(nb_cities)]
 
     # Le nid est la première ville et la source de nourriture la dernière.
-    civ = Civilization(cities[0], cities[-1], 0.05, 0.1, 0.2, 0.2, 0.2)
+    civ = Civilization(cities[0], 0.05, 0.1, 0.2, 0.2, 0.2)
 
     # Ajouter les villes intermédiaires
     for i in range(1, nb_cities - 1):
@@ -150,13 +150,6 @@ if __name__ == "__main__":
     # really_big_civ = get_really_big_civ()
     # really_big_civ.step()
     # main(really_big_civ, False)
-
-    # nest = City(0, QPointF(500, 400))
-    # food_source = City(1, QPointF(1800, 400))
-    # civ = Civilization(nest, food_source, 0.05, 1, 0.2, 0.2, 0.2)
-    # civ.add_road(1300 / 1500, nest, food_source)
-    # civ.create_ant_colony(10, 0.5, 0.5, 0.5)
-    # main(civ, True)
 
     big_civ = get_big_civ()
     big_civ.genetic_algo_application()
