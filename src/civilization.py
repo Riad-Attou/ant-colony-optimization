@@ -236,7 +236,6 @@ class Civilization:
             if not ant.has_food():
                 # Si la fourmi est à la source de nourriture
                 if ant.get_current_city().get_id() == self.get_food_source().get_id():
-                    print("hey", ant.get_next_city())
                     ant.set_has_food(True)
                     ant.set_food_quatity()
                     ant.set_cumulated_weights(
@@ -245,10 +244,10 @@ class Civilization:
 
                     # CHANGEMENT ICI: Commencer immédiatement le chemin de retour
                     if ant.get_explored_roads():
-                        # for road in ant.get_explored_roads():
-                        #     if road not in ant.get_explored_roads_count():
-                        #         ant.add_explored_roads_count(road)
-                        #     ant.increment_explored_roads(road)
+                        for road in ant.get_explored_roads():
+                            if road not in ant.get_explored_roads_count():
+                                ant.add_explored_roads_count(road)
+                            ant.increment_explored_roads(road)
                         if (
                             tuple(ant.get_explored_roads())
                             not in ant.get_explored_roads_count()
