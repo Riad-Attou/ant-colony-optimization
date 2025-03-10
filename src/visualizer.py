@@ -828,7 +828,6 @@ class Canvas2(QOpenGLWidget):
         now = time.time()
         dt = now - self.last_update
         self.last_update = now
-
         all_finished = True
         for ant in self.ants:
             if now < self.ant_launch_time[ant]:

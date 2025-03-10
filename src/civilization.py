@@ -15,6 +15,9 @@ class Civilization:
         food_source: City,
         evaporation_rate: float,
         initial_pheromone: float,
+        selection_factor: float,
+        mutation_factor: float,
+        crossover_factor: float,
     ):
         self.__cities = [nest, food_source]
         self.__roads = []
@@ -26,6 +29,10 @@ class Civilization:
         self.steps = 0
         self.__initial_pheromone = initial_pheromone
         self.__scale_factor = 120  # 1 unité de poids correspond à 120 pixels
+        self.__selection_factor = selection_factor
+        self.__mutation_factor = mutation_factor
+        self.__crossover_factor = crossover_factor
+        self.__threshold_genetic_algo = 100
 
     def get_cities(self):
         return self.__cities
@@ -54,9 +61,21 @@ class Civilization:
     def get_initial_pheromone(self):
         return self.__initial_pheromone
 
+    def get_selection_factor(self):
+        return self.__selection_factor
+
+    def get_mutation_factor(self):
+        return self.__mutation_factor
+
+    def get_crossver(self):
+        return self.__crossover_factor
+
     def add_city(self, city: City):
         self.__cities.append(city)
         return
+
+    def set_ants(self, ants):
+        self.__ants = ants
 
     def add_road(
         self,
@@ -64,7 +83,7 @@ class Civilization:
         start_city: City,
         end_city: City,
     ):
-        road = Road(round(weight, 2), start_city, end_city, self.__initial_pheromone)
+        road = Road(weight, start_city, end_city, self.__initial_pheromone)
         self.__roads.append(road)
         start_city = self.get_city_by_id(road.get_cities()[0].get_id())
         start_city.add_road(road)
@@ -95,7 +114,7 @@ class Civilization:
     ):
         assert ant_number > 0
         for i in range(ant_number):
-            ant = Ant(i + len(self.get_ants()), alpha, beta, gamma, self.__nest)
+            ant = Ant(len(self.get_ants()), alpha, beta, gamma, self.__nest)
             self.add_ants(ant)
         return
 
@@ -147,44 +166,96 @@ class Civilization:
             if road.get_id() == reversed_road.get_id()[::-1]:
                 return road
 
-    def weighted_choice(self, roads):
-        # Récupère les phéromones pour chaque route
-        weights = [road.get_pheromone() for road in roads]
-        # Si la somme des poids est nulle, retourne une route aléatoire uniformément
-        if sum(weights) == 0:
-            return random.choice(roads)
-        # random.choices retourne une liste, on prend le premier élément
-        return random.choices(roads, weights=weights, k=1)[0]
-
     def migration(self):
         alpha = random.uniform(-5, 5)
         beta = random.uniform(-5, 5)
         gamma = random.uniform(-5, 5)
-        self.create_ant_colony(self, 1, alpha, beta, gamma)
+        self.create_ant_colony(1, alpha, beta, gamma)
+
+    def crossover(self, ant_mum, ant_dad):
+        parameters = [random.choice([0, 1]) for _ in range(3)]
+        # Héritage des paramètres
+        alpha = (
+            ant_mum.get_parameters()[0]
+            if parameters[0] == 0
+            else ant_dad.get_parameters()[0]
+        )
+        beta = (
+            ant_mum.get_parameters()[1]
+            if parameters[1] == 0
+            else ant_dad.get_parameters()[1]
+        )
+        gamma = (
+            ant_mum.get_parameters()[2]
+            if parameters[2] == 0
+            else ant_dad.get_parameters()[2]
+        )
+        self.create_ant_colony(1, alpha, beta, gamma)
+
+    def selection(self):
+        ants_data = [
+            (ant, ant.get_food_quantity(), ant.get_total_exploration_count())
+            for ant in self.__ants
+        ]
+        # Trier selon la nourriture récoltée (meilleurs travailleurs)
+        best_workers = sorted(ants_data, key=lambda x: x[1], reverse=True)
+        best_two_workers = (best_workers[0][0], best_workers[1][0])
+        worst_worker = best_workers[-1][0]
+        # Trier selon le nombre de routes explorées (meilleurs explorateurs)
+        best_explorers = sorted(ants_data, key=lambda x: x[2], reverse=False)
+        best_two_explorers = (best_explorers[0][0], best_explorers[1][0])
+        worst_explorer = best_explorers[-1][0]
+        self.__ants.remove(worst_worker)
+        if worst_explorer in self.__ants:
+            self.__ants.remove(worst_explorer)
+        for new_id, ant in enumerate(self.__ants):
+            ant.set_id(new_id)
+        return best_two_workers, best_two_explorers
+
+    def genetic_algo(self):
+        best_two_workers, best_two_explorers = self.selection()
+        self.crossover(best_two_workers[0], best_two_workers[1])
+        self.crossover(best_two_explorers[0], best_two_explorers[1])
+        ants_to_mutate = np.random.choice(
+            self.__ants, int((len(self.__ants) * self.get_mutation_factor()))
+        )
+        for ant in ants_to_mutate:
+            ant.mutation()
+        self.migration()
 
     def step(self):
         self.steps += 1
-        print(self.steps)
-
         if self.steps == self.__half_pheromone_time:
             self.halve_pheromone()
 
         # Évaporation des phéromones
         for road in self.__roads:
             road.evaporate_pheromone()
-
         for ant in self.__ants:
             # RECHERCHE DE NOURRITURE
             if not ant.has_food():
                 # Si la fourmi est à la source de nourriture
                 if ant.get_current_city().get_id() == self.get_food_source().get_id():
                     ant.set_has_food(True)
+                    ant.set_food_quatity()
                     ant.set_cumulated_weights(
                         sum([road.get_weight() for road in ant.get_explored_roads()])
                     )
 
                     # CHANGEMENT ICI: Commencer immédiatement le chemin de retour
                     if ant.get_explored_roads():
+                        # for road in ant.get_explored_roads():
+                        #     if road not in ant.get_explored_roads_count():
+                        #         ant.add_explored_roads_count(road)
+                        #     ant.increment_explored_roads(road)
+                        if (
+                            tuple(ant.get_explored_roads())
+                            not in ant.get_explored_roads_count()
+                        ):
+                            ant.add_explored_roads_count(
+                                tuple(ant.get_explored_roads())
+                            )
+                        ant.increment_explored_roads(tuple(ant.get_explored_roads()))
                         next_road = ant.get_explored_roads()[-1].reverse()
                         next_city = next_road.get_cities()[1]
                         ant.set_next_city(next_city)
@@ -200,7 +271,7 @@ class Civilization:
                 if not outgoing_roads:
                     continue
 
-                next_road = self.weighted_choice(outgoing_roads)
+                next_road = ant.weighted_choice(outgoing_roads)
                 ant.add_explored_road(next_road)
                 next_city = next_road.get_cities()[1]
                 ant.set_next_city(next_city)
@@ -215,7 +286,7 @@ class Civilization:
                     # CHANGEMENT ICI: Choisir immédiatement une nouvelle destination
                     outgoing_roads = ant.get_current_city().get_roads()
                     if outgoing_roads:
-                        next_road = self.weighted_choice(outgoing_roads)
+                        next_road = ant.weighted_choice(outgoing_roads)
                         ant.add_explored_road(next_road)
                         next_city = next_road.get_cities()[1]
                         ant.set_next_city(next_city)
@@ -283,6 +354,37 @@ class Civilization:
             current_city = next_city
 
         return path
+
+    def genetic_algo_application(self):
+        for i in range(200):
+            self.step()
+        threshold_genetic_algo = self.__threshold_genetic_algo
+        while threshold_genetic_algo > 0:
+            # print("iteration : ", threshold_genetic_algo)
+            self.genetic_algo()
+            for ant in self.__ants:
+                ant.reset_ant()
+            for i in range(200):
+                self.step()
+            threshold_genetic_algo -= 1
+
+    def best_worker(self):
+        ants_data = [
+            (ant, ant.get_food_quantity(), ant.get_total_exploration_count())
+            for ant in self.__ants
+        ]
+        # Trier selon la nourriture récoltée (meilleurs travailleurs)
+        best_workers = sorted(ants_data, key=lambda x: x[1], reverse=True)
+        return best_workers[0]
+
+    def best_explorer(self):
+        ants_data = [
+            (ant, ant.get_food_quantity(), ant.get_total_exploration_count())
+            for ant in self.__ants
+        ]
+        # Trier selon la nourriture récoltée (meilleurs travailleurs)
+        best_explorers = sorted(ants_data, key=lambda x: x[2], reverse=True)
+        return best_explorers[0]
 
     def __str__(self):
         return f"Civilization:\n\tNest: City {self.__nest.get_id()} \n\n\tFood source: City {self.__food_source.get_id()}\
