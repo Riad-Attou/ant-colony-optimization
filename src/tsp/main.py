@@ -142,7 +142,7 @@ def create_full_city(n: int):
         for j in range(i):
             civ.add_road(round(random.uniform(1, 5), 2), cities[i], cities[j])
 
-    civ.create_ant_colony(1, 0.5, 0.5, 0.5)
+    civ.create_ant_colony(20, 0.5, 0.5, 0.5)
 
     print(civ)
 
@@ -176,5 +176,5 @@ if __name__ == "__main__":
     # main(big_civ, False)
 
     civ = create_full_city(5)
-    civ.step()
+
     main(civ, False)
