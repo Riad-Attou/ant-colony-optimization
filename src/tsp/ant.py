@@ -23,6 +23,7 @@ class Ant:
         self.__food_quantity = 0
         self.__explored_roads_count = {}
         self.__q0 = 0.5
+        self.__visited_cities = []
 
     def get_id(self):
         return self.__id
@@ -68,6 +69,15 @@ class Ant:
         self.__current_city = city
         return
 
+    def get_visited_cities(self):
+        return self.__visited_cities
+
+    def add_visited_cities(self, city):
+        self.__visited_cities.append(city)
+
+    def reset_visited_cities(self):
+        self.__visited_cities = []
+
     def reset_ant(self):
         self.__current_city = self.__start_city
         self.__next_city = None
@@ -103,6 +113,9 @@ class Ant:
     def pop_explored_roads(self):
         self.__explored_roads.pop()
         return
+
+    def reset_explored_roads(self):
+        self.__explored_roads = []
 
     def has_food(self):
         return self.__has_food
