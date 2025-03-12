@@ -323,28 +323,6 @@ class BaseCanvas(QOpenGLWidget):
             painter.setPen(road_pen)
             painter.drawLine(start, end)
 
-            # Dessin de la flèche indiquant le sens de la route
-            road_pen = QPen(Qt.white, 2, Qt.SolidLine)
-            painter.setPen(road_pen)
-            middle = QPointF((start.x() + end.x()) / 2, (start.y() + end.y()) / 2)
-            dx = end.x() - start.x()
-            dy = end.y() - start.y()
-            angle = math.atan2(dy, dx)
-            arrow_size = 30
-            arrow_angle = math.radians(30)
-            arrow_p1 = QPointF(
-                middle.x() - arrow_size * math.cos(angle - arrow_angle),
-                middle.y() - arrow_size * math.sin(angle - arrow_angle),
-            )
-            arrow_p2 = QPointF(
-                middle.x() - arrow_size * math.cos(angle + arrow_angle),
-                middle.y() - arrow_size * math.sin(angle + arrow_angle),
-            )
-            arrow_head = QPolygonF([middle, arrow_p1, arrow_p2])
-            painter.setBrush(QBrush(Qt.white, Qt.SolidPattern))
-            painter.setPen(QPen(road_color, 4))
-            painter.drawPolygon(arrow_head)
-
             # Préparation du texte (poids de la route et phéromone)
             if self.show_road_text:
                 mid_point = QPointF(

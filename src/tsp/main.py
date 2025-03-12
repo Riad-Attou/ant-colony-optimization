@@ -1,3 +1,4 @@
+import random
 import sys
 
 from city import City
@@ -129,6 +130,25 @@ def get_really_big_civ():
     return civ
 
 
+def create_full_city(n: int):
+    nb_cities = n
+    cities = [City(i) for i in range(nb_cities)]
+
+    civ = Civilization(cities[0], 0.05, 0.1, 0.2, 0.2, 0.2)
+    for i in range(1, n):
+        civ.add_city(cities[i])
+
+    for i in range(n):
+        for j in range(i):
+            civ.add_road(round(random.uniform(1, 5), 2), cities[i], cities[j])
+
+    civ.create_ant_colony(1, 0.5, 0.5, 0.5)
+
+    print(civ)
+
+    return civ
+
+
 def main(civ: Civilization, edition_mode):
     app = QApplication(sys.argv)
     window = Visualizer(civ, edition_mode)
@@ -151,6 +171,10 @@ if __name__ == "__main__":
     # really_big_civ.step()
     # main(really_big_civ, False)
 
-    big_civ = get_big_civ()
-    big_civ.genetic_algo_application()
-    main(big_civ, False)
+    # big_civ = get_big_civ()
+    # big_civ.genetic_algo_application()
+    # main(big_civ, False)
+
+    civ = create_full_city(5)
+    civ.step()
+    main(civ, False)

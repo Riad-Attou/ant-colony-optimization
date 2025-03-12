@@ -22,7 +22,14 @@ class City:
         return
 
     def get_neighbors(self):
-        return [road.get_cities()[1] for road in self.__outgoing_roads]
+        return [
+            (
+                road.get_cities()[1]
+                if road.get_cities()[1].get_id() != self.get_id()
+                else road.get_cities()[0]
+            )
+            for road in self.__outgoing_roads
+        ]
 
     def __str__(self):
         return f"City {self.__id}\n\tOutgoing roads: {[self.get_roads()[i].get_id() for i in range(len(self.get_roads()))]}"

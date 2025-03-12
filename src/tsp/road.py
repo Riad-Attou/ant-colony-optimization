@@ -11,7 +11,7 @@ class Road:
         self.__end_city = end_city
 
     def get_id(self):
-        return self.__start_city.get_id(), self.__end_city.get_id()
+        return tuple(sorted([self.__start_city.get_id(), self.__end_city.get_id()]))
 
     def get_weight(self):
         return self.__weight
@@ -40,9 +40,6 @@ class Road:
         rho = 0.05
         self.__pheromone *= 1 - rho
         return
-
-    def reverse(self):
-        return Road(self.__weight, self.__end_city, self.__start_city, self.__pheromone)
 
     def __str__(self):
         return f"Road ({self.__start_city.get_id()}, {self.__end_city.get_id()}):\n\tWeight: {self.__weight}\n\tPheromone: {self.__pheromone}"

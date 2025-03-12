@@ -86,10 +86,13 @@ class Civilization:
         start_city: City,
         end_city: City,
     ):
-        road = Road(weight, start_city, end_city, self.__initial_pheromone)
+        if start_city.get_id() < end_city.get_id():
+            road = Road(weight, start_city, end_city, self.__initial_pheromone)
+        else:
+            road = Road(weight, end_city, start_city, self.__initial_pheromone)
         self.__roads.append(road)
-        start_city = self.get_city_by_id(road.get_cities()[0].get_id())
         start_city.add_road(road)
+        end_city.add_road(road)
         return
 
     def add_ants(self, ant: Ant):
@@ -257,7 +260,10 @@ class Civilization:
                 outgoing_roads = ant.get_current_city().get_roads()
                 next_road = ant.weighted_choice(outgoing_roads)
                 ant.add_explored_road(next_road)
-                next_city = next_road.get_cities()[1]
+                if next_road.get_cities()[1] != ant.get_current_city():
+                    next_city = next_road.get_cities()[1]
+                else:
+                    next_city = next_road.get_cities()[0]
                 ant.add_visited_cities(next_city)
                 ant.set_next_city(next_city)
 
@@ -271,7 +277,7 @@ class Civilization:
                         ant.get_current_city(), self.get_nest()
                     )
                     ant.set_next_city(next_city)
-                    ant.add_explored_roads(next_road)
+                    ant.add_explored_road(next_road)
                     ant.reset_visited_cities()
                 else:
                     ant.set_next_city(None)  # Réinitialiser pour le prochain choix
@@ -282,57 +288,69 @@ class Civilization:
                     for city in self.__cities
                     if city not in ant.get_visited_cities() and city != self.get_nest()
                 ]
-                outgoing_roads = [
-                    road
-                    for road in ant.get_current_city().get_roads()
-                    if road.get_cities()[1] in unvisited_cities
-                ]
+                outgoing_roads = []
+                for road in ant.get_current_city().get_roads():
+                    if road.get_cities()[0] != ant.get_current_city():
+                        if road.get_cities()[0] in unvisited_cities:
+                            outgoing_roads.append(road)
+
+                    elif road.get_cities()[1] != ant.get_current_city():
+                        if road.get_cities()[1] in unvisited_cities:
+                            outgoing_roads.append(road)
 
                 next_road = ant.weighted_choice(outgoing_roads)
                 ant.add_explored_road(next_road)
-                next_city = next_road.get_cities()[1]
+                if next_road.get_cities()[1] != ant.get_current_city():
+                    next_city = next_road.get_cities()[1]
+                else:
+                    next_city = next_road.get_cities()[0]
                 ant.set_next_city(next_city)
                 ant.add_visited_cities(next_city)
 
+                print([road.get_id() for road in outgoing_roads])
+
     def get_best_path(self):
-        """
-        Retourne une liste des City qui représente le meilleur chemin
-        actuel de la source (nid) vers la food_source, en suivant la route
-        ayant la plus forte quantité de phéromone à chaque étape.
-        """
-        path = []
-        current_city = self.__nest
-        path.append(current_city)
-        visited = {current_city}
+        return [City(0, None)]
 
-        # Tant qu'on n'est pas arrivé à la food source
-        while current_city != self.__food_source:
-            outgoing_roads = current_city.get_roads()
-            best_road = None
-            best_pheromone = -1  # On part d'une valeur très basse
+    # def get_best_path(self):
+    #     """
+    #     Retourne une liste des City qui représente le meilleur chemin
+    #     actuel de la source (nid) vers la food_source, en suivant la route
+    #     ayant la plus forte quantité de phéromone à chaque étape.
+    #     """
+    #     path = []
+    #     current_city = self.__nest
+    #     path.append(current_city)
+    #     visited = {current_city}
 
-            # Parcourir les routes sortantes
-            for road in outgoing_roads:
-                # On suppose que road.get_cities() renvoie un tuple (start, end)
-                _, dest = road.get_cities()
-                # Évite de repasser par une ville déjà visitée pour limiter les cycles
-                if dest in visited:
-                    continue
-                if road.get_pheromone() > best_pheromone:
-                    best_pheromone = road.get_pheromone()
-                    best_road = road
+    #     # Tant qu'on n'est pas arrivé à la food source
+    #     while current_city != self.__food_source:
+    #         outgoing_roads = current_city.get_roads()
+    #         best_road = None
+    #         best_pheromone = -1  # On part d'une valeur très basse
 
-            if best_road is None:
-                # Aucun chemin (sans cycle) n'a été trouvé ; on arrête la recherche.
-                break
+    #         # Parcourir les routes sortantes
+    #         for road in outgoing_roads:
+    #             # On suppose que road.get_cities() renvoie un tuple (start, end)
+    #             start, dest = road.get_cities()
+    #             # Évite de repasser par une ville déjà visitée pour limiter les cycles
+    #             if dest and start in visited:
+    #                 continue
+    #             if road.get_pheromone() > best_pheromone:
+    #                 best_pheromone = road.get_pheromone()
+    #                 best_road = road
 
-            # On choisit la destination de la route avec le maximum de phéromones.
-            _, next_city = best_road.get_cities()
-            path.append(next_city)
-            visited.add(next_city)
-            current_city = next_city
+    #         if best_road is None:
+    #             # Aucun chemin (sans cycle) n'a été trouvé ; on arrête la recherche.
+    #             break
 
-        return path
+    #         # On choisit la destination de la route avec le maximum de phéromones.
+    #         start_city, next_city = best_road.get_cities()
+    #         path.append(next_city)
+    #         visited.add(next_city)
+    #         current_city = next_city
+
+    #     return path
 
     def genetic_algo_application(self):
         for i in range(200):
@@ -366,6 +384,6 @@ class Civilization:
         return best_explorers[0]
 
     def __str__(self):
-        return f"Civilization:\n\tNest: City {self.__nest.get_id()} \n\n\tFood source: City {self.__food_source.get_id()}\
+        return f"Civilization:\n\tNest: City {self.__nest.get_id()}\
         \n\n\tCities: {[city.get_id() for city in self.__cities]}\n\n\tRoad: {[road.get_id() for road in self.__roads]}\
         \n\n\tAnts: {[([ant.get_explored_roads()[i].get_id() for i in range(len(ant.get_explored_roads()))], ant.has_food()) for ant in self.__ants]}"

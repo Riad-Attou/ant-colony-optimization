@@ -127,7 +127,7 @@ class Ant:
     def increment_explored_roads(self, road):
         self.__explored_roads_count[road] += 1
 
-    def set_food_quatity(self):
+    def set_food_quantity(self):
         self.__food_quantity += 1
 
     def take_food(self):
