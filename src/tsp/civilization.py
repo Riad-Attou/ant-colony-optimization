@@ -310,47 +310,48 @@ class Civilization:
                 print([road.get_id() for road in outgoing_roads])
 
     def get_best_path(self):
-        return [City(0, None)]
+        """
+        Retourne une liste d'objets City représentant le circuit basé sur
+        les niveaux actuels de phéromones. Le circuit démarre d'une ville
+        de départ, visite chaque ville une seule fois, puis retourne à cette ville.
+        """
+        path = []
+        # Choisissez la ville de départ (par exemple, self.__start_city)
+        current_city = self.__nest
+        path.append(current_city)
+        visited = {current_city}
 
-    # def get_best_path(self):
-    #     """
-    #     Retourne une liste des City qui représente le meilleur chemin
-    #     actuel de la source (nid) vers la food_source, en suivant la route
-    #     ayant la plus forte quantité de phéromone à chaque étape.
-    #     """
-    #     path = []
-    #     current_city = self.__nest
-    #     path.append(current_city)
-    #     visited = {current_city}
+        # Tant que toutes les villes n'ont pas été visitées
+        while len(visited) < len(self.__cities):
+            outgoing_roads = current_city.get_roads()
+            best_road = None
+            best_pheromone = -1
 
-    #     # Tant qu'on n'est pas arrivé à la food source
-    #     while current_city != self.__food_source:
-    #         outgoing_roads = current_city.get_roads()
-    #         best_road = None
-    #         best_pheromone = -1  # On part d'une valeur très basse
+            # Sélectionner la route menant à une ville non visitée ayant la plus forte phéromone
+            for road in outgoing_roads:
+                start, dest = road.get_cities()
+                next_city = dest if start == current_city else start
+                if next_city in visited:
+                    continue
+                if road.get_pheromone() > best_pheromone:
+                    best_road = road
+                    best_pheromone = road.get_pheromone()
 
-    #         # Parcourir les routes sortantes
-    #         for road in outgoing_roads:
-    #             # On suppose que road.get_cities() renvoie un tuple (start, end)
-    #             start, dest = road.get_cities()
-    #             # Évite de repasser par une ville déjà visitée pour limiter les cycles
-    #             if dest and start in visited:
-    #                 continue
-    #             if road.get_pheromone() > best_pheromone:
-    #                 best_pheromone = road.get_pheromone()
-    #                 best_road = road
+            # Sécurité (inutile dans un graphe complet a priori)
+            if best_road is None:
+                break
 
-    #         if best_road is None:
-    #             # Aucun chemin (sans cycle) n'a été trouvé ; on arrête la recherche.
-    #             break
+            # Récupérer la ville suivante depuis la route sélectionnée
+            start, dest = best_road.get_cities()
+            next_city = dest if start == current_city else start
 
-    #         # On choisit la destination de la route avec le maximum de phéromones.
-    #         start_city, next_city = best_road.get_cities()
-    #         path.append(next_city)
-    #         visited.add(next_city)
-    #         current_city = next_city
+            path.append(next_city)
+            visited.add(next_city)
+            current_city = next_city
 
-    #     return path
+        # Fermer le circuit en revenant à la ville de départ
+        path.append(path[0])
+        return path
 
     def genetic_algo_application(self):
         for i in range(200):
