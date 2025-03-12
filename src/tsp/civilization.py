@@ -244,11 +244,11 @@ class Civilization:
                 and self.steps > 1
             ):
                 ant.set_food_quantity()
-                ant.set_cumulated_weights(
-                    sum([road.get_weight() for road in ant.get_explored_roads()])
-                )
-                for road in ant.get_explored_roads():
-                    ant.deposit_pheromone(road)
+                # ant.set_cumulated_weights(
+                #     sum([road.get_weight() for road in ant.get_explored_roads()])
+                # )
+                # for road in ant.get_explored_roads():
+                #     ant.deposit_pheromone(road)
                 if (
                     tuple(ant.get_explored_roads())
                     not in ant.get_explored_roads_count()
@@ -257,15 +257,15 @@ class Civilization:
                 ant.increment_explored_roads(tuple(ant.get_explored_roads()))
                 ant.set_cumulated_weights(0)
                 ant.reset_explored_roads()
-                outgoing_roads = ant.get_current_city().get_roads()
-                next_road = ant.weighted_choice(outgoing_roads)
-                ant.add_explored_road(next_road)
-                if next_road.get_cities()[1] != ant.get_current_city():
-                    next_city = next_road.get_cities()[1]
-                else:
-                    next_city = next_road.get_cities()[0]
-                ant.add_visited_cities(next_city)
-                ant.set_next_city(next_city)
+                # outgoing_roads = ant.get_current_city().get_roads()
+                # next_road = ant.weighted_choice(outgoing_roads)
+                # ant.add_explored_road(next_road)
+                # if next_road.get_cities()[1] != ant.get_current_city():
+                #     next_city = next_road.get_cities()[1]
+                # else:
+                #     next_city = next_road.get_cities()[0]
+                # ant.add_visited_cities(next_city)
+                # ant.set_next_city(next_city)
 
             # Si la fourmi a une destination, elle s'y déplace
             if ant.get_next_city() is not None:
@@ -274,10 +274,15 @@ class Civilization:
                 if len(ant.get_visited_cities()) == len(self.__cities) - 1:
                     next_city = self.get_nest()
                     next_road = self.get_road_by_cities(
-                        ant.get_current_city(), self.get_nest()
+                        self.get_nest(), ant.get_current_city()
                     )
                     ant.set_next_city(next_city)
                     ant.add_explored_road(next_road)
+                    ant.set_cumulated_weights(
+                        sum([road.get_weight() for road in ant.get_explored_roads()])
+                    )
+                    for road in ant.get_explored_roads():
+                        ant.deposit_pheromone(road)
                     ant.reset_visited_cities()
                 else:
                     ant.set_next_city(None)  # Réinitialiser pour le prochain choix
