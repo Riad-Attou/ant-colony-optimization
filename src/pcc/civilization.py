@@ -243,6 +243,10 @@ class Civilization:
 
                     # CHANGEMENT ICI: Commencer immédiatement le chemin de retour
                     if ant.get_explored_roads():
+                        for road in ant.get_explored_roads():
+                            if road not in ant.get_explored_roads_count():
+                                ant.add_explored_roads_count(road)
+                            ant.increment_explored_roads(road)
                         if (
                             tuple(ant.get_explored_roads())
                             not in ant.get_explored_roads_count()
