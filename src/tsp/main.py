@@ -149,6 +149,24 @@ def create_full_city(n: int) -> Civilization:
     return civ
 
 
+def create_small_full_city() -> Civilization:
+    cities = [City(i) for i in range(4)]
+
+    civ = Civilization(cities[0], 0.05, 0.1, 0.2, 0.2, 0.2)
+    for i in range(1, 4):
+        civ.add_city(cities[i])
+
+    for i in range(4):
+        for j in range(i):
+            civ.add_road(round(random.uniform(1, 5), 2), cities[i], cities[j])
+
+    civ.create_ant_colony(20, 0.5, 0.5, 0.5)
+
+    print(civ)
+
+    return civ
+
+
 def main(civ: Civilization, edition_mode):
     app = QApplication(sys.argv)
     window = Visualizer(civ, edition_mode)
@@ -175,6 +193,5 @@ if __name__ == "__main__":
     # big_civ.genetic_algo_application()
     # main(big_civ, False)
 
-    civ = create_full_city(5)
-
+    civ = create_small_full_city()
     main(civ, False)
