@@ -130,7 +130,7 @@ def get_really_big_civ():
     return civ
 
 
-def create_full_city(n: int):
+def create_full_city(n: int) -> Civilization:
     nb_cities = n
     cities = [City(i) for i in range(nb_cities)]
 
