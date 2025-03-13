@@ -160,4 +160,4 @@ if __name__ == "__main__":
 
     big_civ = get_big_civ()
     big_civ.genetic_algo_application()
-    main(big_civ, False)
+    main(big_civ, True)

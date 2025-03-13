@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QOpenGLWidget,
     QPushButton,
+    QScrollArea,
     QSlider,
     QVBoxLayout,
     QWidget,
@@ -52,10 +53,111 @@ class Visualizer(QWidget):
         # S'assurer que ces widgets overlay restent au premier plan
         self.road_text_checkbox.raise_()
 
+        # Ajouter un nouveau groupe pour l'algorithme génétique
+        self.genetic_group = QGroupBox("Algorithme Génétique", self)
+        self.genetic_group.setGeometry(
+            self.width() - 300, 100, 280, 400
+        )  # Hauteur à 400
+        self.genetic_group.setStyleSheet(
+            """
+            QGroupBox {
+                background-color: rgba(40, 40, 40, 0.8);
+                border-radius: 10px;
+                padding: 15px;
+                font-family: Roboto;
+                font-size: 16px;
+                color: white;
+            }
+            QGroupBox::title {
+                font-size: 18px;
+                font-weight: bold;
+                subcontrol-origin: margin;
+                subcontrol-position: top center;
+                color: white;
+                font-family: 'Roboto';
+                padding: 5px;
+            }
+            """
+        )
+
+        # Créer un layout pour le groupe
+        genetic_layout = QVBoxLayout(self.genetic_group)
+
+        # Bouton pour lancer l'algorithme génétique
+        self.genetic_button = QPushButton("Lancer Algo. Génétique")
+        self.genetic_button.setMinimumHeight(40)
+        self.genetic_button.clicked.connect(self.canvas.launch_genetic_algorithm)
+        self.genetic_button.setStyleSheet(
+            """
+            background-color: #3498db;
+            color: white;
+            border-radius: 5px;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            """
+        )
+        genetic_layout.addWidget(self.genetic_button)
+
+        # Créer une zone de défilement pour les résultats
+        self.results_scroll = QScrollArea()
+        self.results_scroll.setWidgetResizable(True)
+        self.results_scroll.setStyleSheet(
+            """
+            QScrollArea {
+                background-color: rgba(0, 0, 0, 0.3);
+                border-radius: 5px;
+                border: none;
+            }
+            QScrollBar:vertical {
+                width: 10px;
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 5px;
+            }
+            QScrollBar::handle:vertical {
+                background: rgba(100, 100, 100, 0.5);
+                border-radius: 5px;
+            }
+            """
+        )
+        self.results_scroll.setMinimumHeight(300)
+
+        # Créer le label qui contiendra le texte des résultats
+        self.results_area = QLabel(
+            "Résultats de l'algorithme génétique s'afficheront ici."
+        )
+        self.results_area.setStyleSheet(
+            """
+            color: white;
+            padding: 10px;
+            font-size: 13px;
+            background: transparent;
+            """
+        )
+        self.results_area.setWordWrap(True)
+        self.results_area.setTextFormat(Qt.RichText)
+        self.results_area.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        self.results_area.setContentsMargins(10, 10, 10, 10)
+
+        # Ajouter le label au scroll area
+        self.results_scroll.setWidget(self.results_area)
+        genetic_layout.addWidget(self.results_scroll)
+
+        # Compteur d'itérations
+        self.iteration_counter = QLabel("Itérations: --")
+        self.iteration_counter.setStyleSheet("color: white; font-size: 14px;")
+        genetic_layout.addWidget(self.iteration_counter)
+
+        # S'assurer que le groupe reste au premier plan
+        self.genetic_group.raise_()
+
     def resizeEvent(self, event):
         # Repositionner le canvas et les contrôles lors d'un redimensionnement
         self.canvas.setGeometry(0, 0, self.width(), self.height())
         self.road_text_checkbox.setGeometry(self.width() - 170, 80, 150, 20)
+        self.genetic_group.setGeometry(
+            self.width() - 300, 120, 280, 400
+        )  # Augmenter la hauteur à 400
         super().resizeEvent(event)
 
     def toggleRoadText(self, state):
@@ -65,10 +167,11 @@ class Visualizer(QWidget):
 
 # La classe de base qui factorise le code commun
 class BaseCanvas(QOpenGLWidget):
-    def __init__(self, civ, parent=None):
+    def __init__(self, civ, edition_mode: bool, parent=None):
         super().__init__(parent)
         self.civ = civ  # Instance de la civilisation
         self.cached_layout = None
+        self.is_edition_mode = edition_mode
         self.ants = self.civ.get_ants()
         self.ant_progress = {ant: 0.0 for ant in self.ants}
         self.ant_speed = 1.0  # Vitesse par défaut (modifiable via le slider)
@@ -150,11 +253,15 @@ class BaseCanvas(QOpenGLWidget):
 
         # Slider pour la vitesse des fourmis
         speed_layout = QHBoxLayout()
-        self.speed_label = QLabel("Ant Speed: 1", self)
         self.speed_slider = QSlider(Qt.Horizontal, self)
+        if self.is_edition_mode:
+            self.speed_label = QLabel("Ant Speed: 0", self)
+            self.speed_slider.setValue(0)
+        else:
+            self.speed_label = QLabel("Ant Speed: 1", self)
+            self.speed_slider.setValue(1)
         self.speed_slider.setMinimum(0)
         self.speed_slider.setMaximum(30)
-        self.speed_slider.setValue(1)
         self.speed_slider.setTickInterval(2)
         self.speed_slider.setTickPosition(QSlider.TicksBelow)
         self.speed_slider.valueChanged.connect(self.updateAntSpeed)
@@ -461,11 +568,181 @@ class BaseCanvas(QOpenGLWidget):
         self.show_road_text = flag
         self.update()
 
+    def launch_genetic_algorithm(self):
+        """Lance l'algorithme génétique de la civilisation et affiche les résultats."""
+        try:
+            # Récupérer les éléments d'interface depuis le parent
+            parent = self.parent()
+            if hasattr(parent, "iteration_counter"):
+                iteration_label = parent.iteration_counter
+            else:
+                iteration_label = None
 
-# Canvas classique avec décalage central (utilise compute_layout)
+            if hasattr(parent, "results_area"):
+                results_area = parent.results_area
+            else:
+                results_area = None
+
+            if hasattr(parent, "genetic_button"):
+                genetic_button = parent.genetic_button
+                genetic_button.setEnabled(False)
+                genetic_button.setText("Exécution en cours...")
+            else:
+                genetic_button = None
+
+            # Stopper l'animation des fourmis pendant l'exécution de l'algorithme génétique
+            self.timer.stop()
+
+            # Modifier la méthode genetic_algo_application pour mettre à jour le compteur
+            original_genetic_algo = self.civ.genetic_algo_application
+
+            def modified_genetic_algo(nb_iteration=200):
+                # Stocker les valeurs de threshold_genetic_algo initiales
+                threshold_initial = self.civ._Civilization__threshold_genetic_algo
+
+                # Première partie : exécuter nb_iteration fois step()
+                for _ in range(nb_iteration):
+                    self.civ.step()
+
+                # Boucle principale de l'algorithme génétique
+                threshold_genetic_algo = threshold_initial
+                while threshold_genetic_algo > 0:
+                    # Mettre à jour le label d'itération
+                    if iteration_label:
+                        iteration_label.setText(
+                            f"Itérations restantes: {threshold_genetic_algo}"
+                        )
+                        iteration_label.repaint()
+
+                    # Exécuter l'algorithme génétique
+                    self.civ.genetic_algo()
+
+                    # Mettre à jour le dictionnaire ant_progress avec les nouvelles fourmis
+                    current_ants = self.civ.get_ants()
+                    self.ants = current_ants
+                    # Mettre à jour le ant_progress en ajoutant les fourmis manquantes
+                    for ant in current_ants:
+                        if ant not in self.ant_progress:
+                            self.ant_progress[ant] = 0.0
+
+                    # Réinitialiser les fourmis
+                    for ant in self.civ.get_ants():
+                        ant.reset_ant()
+
+                    # Exécuter nb_iteration fois step()
+                    for _ in range(nb_iteration):
+                        self.civ.step()
+
+                    threshold_genetic_algo -= 1
+
+                # Afficher les résultats
+                self.display_results(results_area)
+
+                # Réactiver le bouton
+                if genetic_button:
+                    genetic_button.setEnabled(True)
+                    genetic_button.setText("Lancer Algo. Génétique")
+
+                # Redémarrer l'animation
+                self.timer.start()
+
+            # Remplacer temporairement la méthode
+            self.civ.genetic_algo_application = modified_genetic_algo
+
+            # Lancer l'algorithme
+            self.civ.genetic_algo_application(200)
+
+            # Restaurer la méthode originale
+            self.civ.genetic_algo_application = original_genetic_algo
+
+        except Exception as e:
+            print(f"Erreur lors de l'exécution de l'algorithme génétique: {e}")
+            import traceback
+
+            traceback.print_exc()
+            # S'assurer que le timer est redémarré en cas d'erreur
+            self.timer.start()
+            if hasattr(self.parent(), "genetic_button"):
+                self.parent().genetic_button.setEnabled(True)
+                self.parent().genetic_button.setText("Lancer Algo. Génétique")
+
+    def display_results(self, results_area=None):
+        """Affiche les résultats de l'algorithme génétique."""
+        try:
+            # Obtenir le meilleur travailleur et le meilleur explorateur
+            best_worker = self.civ.best_worker()
+            best_explorer = self.civ.best_explorer()
+
+            # Extraire les paramètres (alpha, beta, gamma)
+            worker_ant = best_worker[0]
+            explorer_ant = best_explorer[0]
+
+            worker_params = worker_ant.get_parameters()
+            explorer_params = explorer_ant.get_parameters()
+
+            # Mettre à jour le texte du chemin optimal
+            best_path = self.civ.get_best_path()
+            if best_path:
+                path_text = " > ".join(str(city.get_id()) for city in best_path)
+                self.best_path_text = "Best Path (Genetic): " + path_text
+
+            # Préparer le texte des résultats avec plus d'espacement
+            results_text = (
+                f"<b>Configuration optimale trouvée:</b><br><br>"
+                f"<b>Meilleur travailleur</b> (ID: {worker_ant.get_id()}):<br>"
+                f"• Alpha: <b>{worker_params[0]:.2f}</b><br>"
+                f"• Beta: <b>{worker_params[1]:.2f}</b><br>"
+                f"• Gamma: <b>{worker_params[2]:.2f}</b><br>"
+                f"• Nourriture collectée: <b>{best_worker[1]}</b><br><br>"
+                f"<b>Meilleur explorateur</b> (ID: {explorer_ant.get_id()}):<br>"
+                f"• Alpha: <b>{explorer_params[0]:.2f}</b><br>"
+                f"• Beta: <b>{explorer_params[1]:.2f}</b><br>"
+                f"• Gamma: <b>{explorer_params[2]:.2f}</b><br>"
+                f"• Nombre d'explorations: <b>{best_explorer[2]}</b><br><br>"
+                f"<b>Chemin optimal:</b><br>{path_text}"
+            )
+
+            # Afficher les résultats
+            if results_area:
+                results_area.setText(results_text)
+                # Remonter au début du texte
+                if hasattr(self.parent(), "results_scroll"):
+                    self.parent().results_scroll.verticalScrollBar().setValue(0)
+
+            parent = self.parent()
+            if hasattr(parent, "iteration_counter"):
+                parent.iteration_counter.setText("Algorithme terminé!")
+
+            # Réinitialiser l'animation
+            self.start_time = time.time()
+            self.last_update = time.time()
+
+            # S'assurer que toutes les fourmis sont dans le dictionnaire ant_progress
+            current_ants = self.civ.get_ants()
+            self.ants = current_ants
+            self.ant_progress = {ant: 0.0 for ant in current_ants}
+
+            # Recalculer les temps de lancement
+            self.ant_launch_delta = self.ant_speed * 0.04
+            self.ant_launch_time = {
+                ant: self.start_time + i * self.ant_launch_delta
+                for i, ant in enumerate(self.ants)
+            }
+
+            # Forcer la mise à jour de l'affichage
+            self.update()
+
+        except Exception as e:
+            print(f"Erreur lors de l'affichage des résultats: {e}")
+            import traceback
+
+            traceback.print_exc()
+
+
+# Canvas classique
 class Canvas(BaseCanvas):
     def __init__(self, civ, parent=None):
-        super().__init__(civ, parent)
+        super().__init__(civ, False, parent)
 
     def get_layout(self):
         if hasattr(self.civ, "compute_layout"):
@@ -482,13 +759,14 @@ class Canvas(BaseCanvas):
         return node_positions
 
 
-# SimulationCanvas qui utilise compute_free_layout et ne décale pas le layout
+# Canvas avec placement de villes et de routes.
 class SimulationCanvas(BaseCanvas):
     def __init__(self, civ, parent=None):
-        super().__init__(civ, parent)
+        super().__init__(civ, True, parent)
         # Attributs spécifiques à la gestion par clic
         self.current_road_start = None
         self.has_started = False
+        self.ant_speed = 0.0
 
     def get_layout(self):
         if hasattr(self.civ, "compute_free_layout"):
@@ -504,6 +782,10 @@ class SimulationCanvas(BaseCanvas):
         return node_positions
 
     def mousePressEvent(self, event):
+        # Vérifier si le clic est dans la zone du widget input_group
+        if self.input_group.geometry().contains(event.pos()):
+            return
+
         if event.button() == Qt.LeftButton:
             pos = event.pos()
             # Si aucune ville n'est proche, en créer une nouvelle

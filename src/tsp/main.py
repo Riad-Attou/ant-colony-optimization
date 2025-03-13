@@ -167,6 +167,12 @@ def create_small_full_city() -> Civilization:
     return civ
 
 
+def get_empty_civ():
+    nest = City(0, QPointF(500, 400))
+    civ = Civilization(nest, 0.05, 0.1, 0.2, 0.2, 0.2)
+    return civ
+
+
 def main(civ: Civilization, edition_mode):
     app = QApplication(sys.argv)
     window = Visualizer(civ, edition_mode)
@@ -193,5 +199,8 @@ if __name__ == "__main__":
     # big_civ.genetic_algo_application()
     # main(big_civ, False)
 
-    civ = create_small_full_city()
-    main(civ, False)
+    # civ = create_small_full_city()
+    # main(civ, False)
+
+    civ = get_empty_civ()
+    main(civ, True)

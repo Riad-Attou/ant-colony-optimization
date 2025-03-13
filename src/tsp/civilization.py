@@ -312,8 +312,6 @@ class Civilization:
                 ant.set_next_city(next_city)
                 ant.add_visited_cities(next_city)
 
-                print([road.get_id() for road in outgoing_roads])
-
     def get_best_path(self):
         """
         Retourne une liste d'objets City représentant le circuit basé sur
@@ -358,16 +356,16 @@ class Civilization:
         path.append(path[0])
         return path
 
-    def genetic_algo_application(self):
-        for i in range(200):
+    def genetic_algo_application(self, nb_iteration: int = 200):
+        for _ in range(nb_iteration):
             self.step()
         threshold_genetic_algo = self.__threshold_genetic_algo
         while threshold_genetic_algo > 0:
-            print("iteration : ", threshold_genetic_algo)
+            print("Iteration :", threshold_genetic_algo)
             self.genetic_algo()
             for ant in self.__ants:
                 ant.reset_ant()
-            for i in range(200):
+            for _ in range(nb_iteration):
                 self.step()
             threshold_genetic_algo -= 1
 
