@@ -383,7 +383,6 @@ class Civilization:
             (ant, ant.get_food_quantity(), ant.get_total_exploration_count())
             for ant in self.__ants
         ]
-        # Trier selon la nourriture récoltée (meilleurs travailleurs)
         best_explorers = sorted(ants_data, key=lambda x: x[2], reverse=True)
         return best_explorers[0]
 

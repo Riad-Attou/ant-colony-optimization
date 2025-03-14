@@ -167,13 +167,13 @@ class Ant:
     def mutation(self):
         parameter_to_mutate = random.choice(["alpha", "beta", "gamma"])
         if parameter_to_mutate == "alpha":
-            alpha_mutated = random.uniform(-5, 5)
+            alpha_mutated = random.uniform(0, 5)
             self.set_alpha(alpha_mutated)
         elif parameter_to_mutate == "beta":
-            beta_mutated = random.uniform(-5, 5)
+            beta_mutated = random.uniform(0, 5)
             self.set_beta(beta_mutated)
         else:
-            gamma_mutated = random.uniform(-5, 5)
+            gamma_mutated = random.uniform(0, 5)
             self.set_gamma(gamma_mutated)
 
     def __str__(self):
