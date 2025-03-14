@@ -173,9 +173,9 @@ class Civilization:
                 return road
 
     def migration(self):
-        alpha = random.uniform(-5, 5)
-        beta = random.uniform(-5, 5)
-        gamma = random.uniform(-5, 5)
+        alpha = random.uniform(0, 5)
+        beta = random.uniform(0, 5)
+        gamma = random.uniform(0, 5)
         self.create_ant_colony(1, alpha, beta, gamma)
 
     def crossover(self, ant_mum, ant_dad):
@@ -208,7 +208,7 @@ class Civilization:
         best_two_workers = (best_workers[0][0], best_workers[1][0])
         worst_worker = best_workers[-1][0]
         # Trier selon le nombre de routes explorées (meilleurs explorateurs)
-        best_explorers = sorted(ants_data, key=lambda x: x[2], reverse=False)
+        best_explorers = sorted(ants_data, key=lambda x: x[2], reverse=True)
         best_two_explorers = (best_explorers[0][0], best_explorers[1][0])
         worst_explorer = best_explorers[-1][0]
         self.__ants.remove(worst_worker)

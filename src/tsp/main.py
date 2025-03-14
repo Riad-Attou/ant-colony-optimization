@@ -199,8 +199,8 @@ if __name__ == "__main__":
     # big_civ.genetic_algo_application()
     # main(big_civ, False)
 
-    # civ = create_small_full_city()
-    # main(civ, False)
+    civ = create_small_full_city()
+    main(civ, False)
 
-    civ = get_empty_civ()
-    main(civ, True)
+    # civ = get_empty_civ()
+    # main(civ, True)
