@@ -1,7 +1,6 @@
 import math
 import time
 
-from city import City
 from PyQt5.QtCore import QPointF, Qt, QTimer
 from PyQt5.QtGui import QBrush, QColor, QFont, QIcon, QPainter, QPen, QPolygonF
 from PyQt5.QtWidgets import (
@@ -19,6 +18,8 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+from pcc.city import City
+
 
 class Visualizer(QWidget):
     def __init__(self, civ, edition_mode: bool):
@@ -26,7 +27,7 @@ class Visualizer(QWidget):
         civ: une instance de la classe Civilization.
         """
         super().__init__()
-        self.setWindowTitle("Ant Colony Simulation")
+        self.setWindowTitle("Ant Colony Simulation - PCC")
         self.setMinimumSize(800, 600)
         self.setWindowIcon(QIcon("assets/logo.webp"))
 
@@ -40,21 +41,6 @@ class Visualizer(QWidget):
             self.canvas = Canvas(civ, parent=self)
         self.canvas.setGeometry(0, 0, self.width(), self.height())
         self.canvas.show()
-
-        # # Curseur pour la vitesse des ants (overlay en haut à droite)
-        # self.speed_slider = QSlider(Qt.Horizontal, self)
-        # self.speed_slider.setFont(QFont("Roboto", 8))
-        # self.speed_slider.setMinimum(0)
-        # self.speed_slider.setMaximum(30)
-        # self.speed_slider.setValue(0)
-        # self.speed_slider.setTickInterval(2)
-        # self.speed_slider.setTickPosition(QSlider.TicksBelow)
-        # self.speed_slider.setGeometry(self.width() - 170, 20, 150, 30)
-        # self.speed_slider.valueChanged.connect(self.updateAntSpeed)
-
-        # self.speed_label = QLabel("Ant Speed: 0", self)
-        # self.speed_label.setGeometry(self.width() - 170, 55, 150, 20)
-        # self.speed_label.setStyleSheet("color: white;")
 
         # Interrupteur (CheckBox) pour afficher/masquer le texte sous les routes
         self.road_text_checkbox = QCheckBox("Show Road Text", self)

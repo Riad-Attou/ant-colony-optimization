@@ -1,24 +1,24 @@
-import random
 import sys
 
-from city import City
-from civilization import Civilization
 from PyQt5.QtCore import QPointF
 from PyQt5.QtGui import QSurfaceFormat
 from PyQt5.QtWidgets import QApplication
-from visualizer import Visualizer
+
+from pcc.city import City
+from pcc.civilization import Civilization
+from pcc.visualizer import Visualizer
 
 fmt = QSurfaceFormat()
 fmt.setSamples(8)
 QSurfaceFormat.setDefaultFormat(fmt)
 
 
-def get_small_civ():
+def get_small_civ_pcc():
     nb_cities = 4
 
     cities = [City(i) for i in range(4)]
 
-    civ = Civilization(cities[0], 0.05, 0.1, 0.2, 0.2, 0.2)
+    civ = Civilization(cities[0], cities[-1], 0.05, 0.1, 0.2, 0.2, 0.2)
 
     for i in range(1, nb_cities - 1):
         civ.add_city(cities[i])
@@ -33,12 +33,12 @@ def get_small_civ():
     return civ
 
 
-def get_big_civ():
+def get_big_civ_pcc():
     nb_cities = 10
 
     cities = [City(i) for i in range(nb_cities)]
 
-    civ = Civilization(cities[0], 0.05, 0.1, 0.7, 0.2, 0.5)
+    civ = Civilization(cities[0], cities[-1], 0.05, 0.1, 0.7, 0.2, 0.5)
 
     for i in range(1, nb_cities - 1):
         civ.add_city(cities[i])
@@ -76,12 +76,12 @@ def get_big_civ():
     return civ
 
 
-def get_really_big_civ():
+def get_really_big_civ_pcc():
     nb_cities = 20
     cities = [City(i) for i in range(nb_cities)]
 
     # Le nid est la première ville et la source de nourriture la dernière.
-    civ = Civilization(cities[0], 0.05, 0.1, 0.2, 0.2, 0.2)
+    civ = Civilization(cities[0], cities[-1], 0.05, 0.1, 0.2, 0.2, 0.2)
 
     # Ajouter les villes intermédiaires
     for i in range(1, nb_cities - 1):
@@ -130,50 +130,7 @@ def get_really_big_civ():
     return civ
 
 
-def create_full_city(n: int) -> Civilization:
-    nb_cities = n
-    cities = [City(i) for i in range(nb_cities)]
-
-    civ = Civilization(cities[0], 0.05, 0.1, 0.2, 0.2, 0.2)
-    for i in range(1, n):
-        civ.add_city(cities[i])
-
-    for i in range(n):
-        for j in range(i):
-            civ.add_road(round(random.uniform(1, 5), 2), cities[i], cities[j])
-
-    civ.create_ant_colony(20, 0.5, 0.5, 0.5)
-
-    print(civ)
-
-    return civ
-
-
-def create_small_full_city() -> Civilization:
-    cities = [City(i) for i in range(4)]
-
-    civ = Civilization(cities[0], 0.05, 0.1, 0.2, 0.2, 0.2)
-    for i in range(1, 4):
-        civ.add_city(cities[i])
-
-    for i in range(4):
-        for j in range(i):
-            civ.add_road(round(random.uniform(1, 5), 2), cities[i], cities[j])
-
-    civ.create_ant_colony(20, 0.5, 0.5, 0.5)
-
-    print(civ)
-
-    return civ
-
-
-def get_empty_civ():
-    nest = City(0, QPointF(500, 400))
-    civ = Civilization(nest, 0.05, 0.1, 0.2, 0.2, 0.2)
-    return civ
-
-
-def main(civ: Civilization, edition_mode):
+def main_pcc(civ: Civilization, edition_mode):
     app = QApplication(sys.argv)
     window = Visualizer(civ, edition_mode)
     window.showMaximized()
@@ -181,26 +138,27 @@ def main(civ: Civilization, edition_mode):
     sys.exit(app.exec_())
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    # small_civ = get_small_civ()
-    # small_civ.step()
-    # main(small_civ, False)
+#     # small_civ = get_small_civ_pcc()
+#     # small_civ.step()
+#     # main(small_civ, False)
 
-    # big_civ = get_big_civ()
-    # big_civ.step()
-    # main(big_civ, False)
+#     # big_civ = get_big_civ_pcc()
+#     # big_civ.step()
+#     # main(big_civ, False)
 
-    # really_big_civ = get_really_big_civ()
-    # really_big_civ.step()
-    # main(really_big_civ, False)
+#     # really_big_civ = get_really_big_civ_pcc()
+#     # really_big_civ.step()
+#     # main(really_big_civ, False)
 
-    # big_civ = get_big_civ()
-    # big_civ.genetic_algo_application()
-    # main(big_civ, False)
+#     # nest = City(0, QPointF(500, 400))
+#     # food_source = City(1, QPointF(1800, 400))
+#     # civ = Civilization(nest, food_source, 0.05, 1, 0.2, 0.2, 0.2)
+#     # civ.add_road(1300 / 1500, nest, food_source)
+#     # civ.create_ant_colony(10, 0.5, 0.5, 0.5)
+#     # main(civ, True)
 
-    civ = create_small_full_city()
-    main(civ, False)
-
-    # civ = get_empty_civ()
-    # main(civ, True)
+#     big_civ = get_big_civ_pcc()
+#     big_civ.genetic_algo_application()
+#     main(big_civ, True)

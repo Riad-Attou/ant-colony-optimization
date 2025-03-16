@@ -1,4 +1,4 @@
-from city import City
+from pcc.city import City
 
 
 class Road:
