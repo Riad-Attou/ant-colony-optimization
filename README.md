@@ -1,6 +1,6 @@
 # Ant Colony Simulation
 
-Devoir d'algorithme collaboratif.
+Devoir d'algorithmes collaboratifs et applications. Ce devoir vise à utiliser un algorithme de l'ACO pour les problèmes de recherche du plus court chemin (PCC) et du problème du voyageur de commerce (TSP).
 
 ## Installation
 
@@ -11,11 +11,23 @@ Devoir d'algorithme collaboratif.
    cd ant_colony
    ```
 
-2. Installer les dépendances (exemple en Python) :
+2. Installer les dépendances :
 
     ```bash
     pip install -r requirements.txt
     ```
 
-3. Démarrer l'application ou exécutez le script :
-    python main.py
+## Utilisation
+
+Pour démarrer l'application, lancer `main_pcc.py` ou bien `main_tsp.py`. Dans ces deux fichiers, deux modes sont fournis : un mode avec une ville prédéfinie, et un mode permettant de créer soit-même sa ville (décommenter le code correspondant).
+
+L'utilisation détaillée de l'application est présentée dans le rapport.
+
+## Auteurs
+
+Riad ATTOU : <riad.attou@etu.ec-lyon.fr>\
+Asma EL MOUHSINE : <asma.el-mouhsine@etu.ec-lyon.fr>
+
+---
+
+*Centrale Lyon - 2024-2025*

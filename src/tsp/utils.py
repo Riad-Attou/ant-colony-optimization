@@ -64,15 +64,7 @@ def get_big_civ_tsp():
     civ.add_road(4.0, cities[1], cities[6])
     civ.add_road(5.0, cities[2], cities[8])
 
-    civ.create_ant_colony(10, 5, 0, 0.5)
-    civ.create_ant_colony(20, 1, 3, 0.5)
-    civ.create_ant_colony(20, 0, 9, 0.5)
     civ.create_ant_colony(30, 0.1, 5, 0.5)
-    civ.create_ant_colony(40, 7, 3, 0.5)
-    civ.create_ant_colony(10, 2, 0.6, 0.5)
-    civ.create_ant_colony(20, 0.5, 0.3, 0.5)
-    civ.create_ant_colony(30, 4, 10, 0.5)
-    civ.create_ant_colony(50, 1, 1, 0.5)
 
     return civ
 
@@ -145,8 +137,6 @@ def create_full_city_tsp(n: int) -> Civilization:
 
     civ.create_ant_colony(20, 0.5, 0.5, 0.5)
 
-    print(civ)
-
     return civ
 
 
@@ -162,8 +152,6 @@ def create_small_full_city_tsp() -> Civilization:
             civ.add_road(round(random.uniform(1, 5), 2), cities[i], cities[j])
 
     civ.create_ant_colony(20, 0.5, 0.5, 0.5)
-
-    print(civ)
 
     return civ
 

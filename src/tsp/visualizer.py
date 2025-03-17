@@ -28,7 +28,7 @@ class Visualizer(QWidget):
         civ: une instance de la classe Civilization.
         """
         super().__init__()
-        self.setWindowTitle("Ant Colony Simulation")
+        self.setWindowTitle("Ant Colony Simulation - TSP")
         self.setMinimumSize(800, 600)
         self.setWindowIcon(QIcon("assets/logo.webp"))
 
@@ -328,7 +328,6 @@ class BaseCanvas(QOpenGLWidget):
             self.first_composition_done = True  # Marquer comme exécuté
         try:
             colony_size = int(self.size_input.text())
-            print(colony_size)
             alpha = float(self.alpha_input.text())
             gamma = float(self.gamma_input.text())
             beta = float(self.beta_input.text())
@@ -443,7 +442,7 @@ class BaseCanvas(QOpenGLWidget):
                 text_pos = QPointF(
                     mid_point.x() + offset_vector.x(), mid_point.y() + offset_vector.y()
                 )
-                weight_text = str(road.get_weight())
+                weight_text = str(round(road.get_weight(), 2))
                 pheromone_text = str(round(road.get_pheromone(), 3))
                 text = weight_text + " | " + pheromone_text
                 angle_deg = math.degrees(
@@ -642,7 +641,7 @@ class BaseCanvas(QOpenGLWidget):
                 # Réactiver le bouton
                 if genetic_button:
                     genetic_button.setEnabled(True)
-                    genetic_button.setText("Lancer Algo. Génétique")
+                    genetic_button.setText("Lancer algo. génétique")
 
                 # Redémarrer l'animation
                 self.timer.start()
