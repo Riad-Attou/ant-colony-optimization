@@ -33,6 +33,11 @@ class Civilization:
         self.__mutation_factor = mutation_factor
         self.__crossover_factor = crossover_factor
         self.__threshold_genetic_algo = 100
+        self.exploration_weight = 1  # favorise le nombre d’arêtes explorées
+        self.rarity_bonus = 2  # favorise les arêtes rares
+        self.redundancy_penalty = (
+            0.5  # pénalise le fait de repasser sur les mêmes arêtes
+        )
 
     def get_cities(self):
         return self.__cities
@@ -109,12 +114,10 @@ class Civilization:
             current_pheromone = road.get_pheromone()
             road.set_pheromone(current_pheromone / 2)
 
-    def create_ant_colony(
-        self, ant_number: int, alpha: float, beta: float, gamma: float
-    ):
+    def create_ant_colony(self, ant_number: int, alpha: float, beta: float):
         assert ant_number > 0
         for i in range(ant_number):
-            ant = Ant(len(self.get_ants()), alpha, beta, gamma, self.__nest)
+            ant = Ant(len(self.get_ants()), alpha, beta, self.__nest)
             self.add_ants(ant)
         return
 
@@ -169,8 +172,7 @@ class Civilization:
     def migration(self):
         alpha = random.uniform(0, 5)
         beta = random.uniform(0, 5)
-        gamma = random.uniform(0, 5)
-        self.create_ant_colony(1, alpha, beta, gamma)
+        self.create_ant_colony(1, alpha, beta)
 
     def crossover(self, ant_mum, ant_dad):
         parameters = [random.choice([0, 1]) for _ in range(3)]
@@ -185,12 +187,8 @@ class Civilization:
             if parameters[1] == 0
             else ant_dad.get_parameters()[1]
         )
-        gamma = (
-            ant_mum.get_parameters()[2]
-            if parameters[2] == 0
-            else ant_dad.get_parameters()[2]
-        )
-        self.create_ant_colony(1, alpha, beta, gamma)
+
+        self.create_ant_colony(1, alpha, beta)
 
     def selection(self):
         ants_data = [

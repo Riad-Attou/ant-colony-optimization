@@ -220,21 +220,18 @@ class BaseCanvas(QOpenGLWidget):
         self.size_input = QLineEdit()
         self.alpha_input = QLineEdit()
         self.beta_input = QLineEdit()
-        self.gamma_input = QLineEdit()
 
         # Fixer une taille uniforme aux QLineEdit
         for line_edit in (
             self.size_input,
             self.alpha_input,
             self.beta_input,
-            self.gamma_input,
         ):
             line_edit.setFixedWidth(120)
 
         form_layout.addRow(QLabel("Nombre de fourmis:"), self.size_input)
         form_layout.addRow(QLabel("Alpha:"), self.alpha_input)
         form_layout.addRow(QLabel("Beta:"), self.beta_input)
-        form_layout.addRow(QLabel("Gamma:"), self.gamma_input)
         main_layout.addLayout(form_layout)
 
         # Bouton pour choisir une couleur avec affichage du résultat
@@ -329,9 +326,8 @@ class BaseCanvas(QOpenGLWidget):
             colony_size = int(self.size_input.text())
             print(colony_size)
             alpha = float(self.alpha_input.text())
-            gamma = float(self.gamma_input.text())
             beta = float(self.beta_input.text())
-            self.civ.create_ant_colony(colony_size, alpha, gamma, beta)
+            self.civ.create_ant_colony(colony_size, alpha, beta)
         except ValueError:
             self.result_label.setText("Veuillez entrer des valeurs valides")
 
@@ -697,7 +693,7 @@ class BaseCanvas(QOpenGLWidget):
             best_worker = self.civ.best_worker()
             best_explorer = self.civ.best_explorer()
 
-            # Extraire les paramètres (alpha, beta, gamma)
+            # Extraire les paramètres (alpha, beta)
             worker_ant = best_worker[0]
             explorer_ant = best_explorer[0]
 
@@ -716,12 +712,10 @@ class BaseCanvas(QOpenGLWidget):
                 f"<b>Meilleur travailleur</b> (ID: {worker_ant.get_id()}):<br>"
                 f"• Alpha: <b>{worker_params[0]:.2f}</b><br>"
                 f"• Beta: <b>{worker_params[1]:.2f}</b><br>"
-                f"• Gamma: <b>{worker_params[2]:.2f}</b><br>"
                 f"• Nourriture collectée: <b>{best_worker[1]}</b><br><br>"
                 f"<b>Meilleur explorateur</b> (ID: {explorer_ant.get_id()}):<br>"
                 f"• Alpha: <b>{explorer_params[0]:.2f}</b><br>"
                 f"• Beta: <b>{explorer_params[1]:.2f}</b><br>"
-                f"• Gamma: <b>{explorer_params[2]:.2f}</b><br>"
                 f"• Nombre d'explorations: <b>{best_explorer[2]}</b><br><br>"
                 f"<b>Chemin optimal:</b><br>{path_text}"
             )

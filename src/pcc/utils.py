@@ -28,7 +28,7 @@ def get_small_civ_pcc():
     civ.add_road(3.0, cities[1], cities[3])
     civ.add_road(4.0, cities[2], cities[3])
 
-    civ.create_ant_colony(1, 10, 0, 0.5)
+    civ.create_ant_colony(1, 10, 0)
 
     return civ
 
@@ -63,7 +63,7 @@ def get_big_civ_pcc():
     civ.add_road(4.0, cities[1], cities[6])
     civ.add_road(5.0, cities[2], cities[8])
 
-    civ.create_ant_colony(30, 0.1, 5, 0.5)
+    civ.create_ant_colony(30, 0.1, 5)
 
     return civ
 
@@ -118,7 +118,7 @@ def get_really_big_civ_pcc():
     civ.add_road(5.0, cities[8], cities[16])
     civ.add_road(6.0, cities[3], cities[10])
 
-    civ.create_ant_colony(100, 0.5, 0.5, 0.5)
+    civ.create_ant_colony(100, 0.5, 0.5)
     return civ
 
 

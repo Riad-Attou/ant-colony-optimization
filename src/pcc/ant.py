@@ -4,11 +4,10 @@ from PyQt5.QtGui import QColor
 
 
 class Ant:
-    def __init__(self, id: int, alpha: float, beta: float, gamma: float, start_city):
+    def __init__(self, id: int, alpha: float, beta: float, start_city):
         self.__id = id
         self.__alpha = alpha
         self.__beta = beta
-        self.__gamma = gamma
         self.__has_food = False
         self.__start_city = start_city
         self.__current_city = start_city
@@ -44,7 +43,7 @@ class Ant:
         return
 
     def get_parameters(self):
-        return self.__alpha, self.__beta, self.__gamma
+        return self.__alpha, self.__beta
 
     def get_food_quantity(self):
         return self.__food_quantity
@@ -57,9 +56,6 @@ class Ant:
 
     def set_beta(self, beta):
         self.__beta = beta
-
-    def set_gamma(self, gamma):
-        self.__gamma = gamma
 
     def get_current_city(self):
         return self.__current_city
@@ -152,16 +148,13 @@ class Ant:
             return random.choices(roads, weights=probabilities, k=1)[0]
 
     def mutation(self):
-        parameter_to_mutate = random.choice(["alpha", "beta", "gamma"])
+        parameter_to_mutate = random.choice(["alpha", "beta"])
         if parameter_to_mutate == "alpha":
             alpha_mutated = random.uniform(0, 5)
             self.set_alpha(alpha_mutated)
         elif parameter_to_mutate == "beta":
             beta_mutated = random.uniform(0, 5)
             self.set_beta(beta_mutated)
-        else:
-            gamma_mutated = random.uniform(0, 5)
-            self.set_gamma(gamma_mutated)
 
     def __str__(self):
-        return f"Ant {self.__id}:\n\tParameters (alpha, beta, gamma): {self.get_parameters()}\n\tHas food: {self.has_food()}\n"
+        return f"Ant {self.__id}:\n\tParameters (alpha, beta): {self.get_parameters()}\n\tHas food: {self.has_food()}\n"

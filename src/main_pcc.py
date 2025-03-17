@@ -22,5 +22,5 @@ if __name__ == "__main__":
     # PCC AVEC UNE VILLE PERSONNALISÉE #
     ####################################
     # civ = get_empty_civ_pcc()
-    # civ.create_ant_colony(5, 0.5, 0.5, 0.5)
+    # civ.create_ant_colony(5, 0.5, 0.5)
     # main(civ, edition_mode=True)
