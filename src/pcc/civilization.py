@@ -15,9 +15,8 @@ class Civilization:
         food_source: City,
         evaporation_rate: float,
         initial_pheromone: float,
-        selection_factor: float,
         mutation_factor: float,
-        crossover_factor: float,
+        steps_genetic_algo,
     ):
         self.__cities = [nest, food_source]
         self.__roads = []
@@ -29,15 +28,9 @@ class Civilization:
         self.steps = 0
         self.__initial_pheromone = initial_pheromone
         self.__scale_factor = 120  # 1 unité de poids correspond à 120 pixels
-        self.__selection_factor = selection_factor
         self.__mutation_factor = mutation_factor
-        self.__crossover_factor = crossover_factor
-        self.__threshold_genetic_algo = 100
-        self.exploration_weight = 1  # favorise le nombre d’arêtes explorées
-        self.rarity_bonus = 2  # favorise les arêtes rares
-        self.redundancy_penalty = (
-            0.5  # pénalise le fait de repasser sur les mêmes arêtes
-        )
+        self.__threshold_genetic_algo = 300
+        self.__steps_genetic_algo = steps_genetic_algo
 
     def get_cities(self):
         return self.__cities
@@ -66,14 +59,8 @@ class Civilization:
     def get_initial_pheromone(self):
         return self.__initial_pheromone
 
-    def get_selection_factor(self):
-        return self.__selection_factor
-
     def get_mutation_factor(self):
         return self.__mutation_factor
-
-    def get_crossver(self):
-        return self.__crossover_factor
 
     def add_city(self, city: City):
         self.__cities.append(city)
@@ -175,7 +162,7 @@ class Civilization:
         self.create_ant_colony(1, alpha, beta)
 
     def crossover(self, ant_mum, ant_dad):
-        parameters = [random.choice([0, 1]) for _ in range(3)]
+        parameters = [random.choice([0, 1]) for _ in range(2)]
         # Héritage des paramètres
         alpha = (
             ant_mum.get_parameters()[0]
@@ -192,7 +179,7 @@ class Civilization:
 
     def selection(self):
         ants_data = [
-            (ant, ant.get_food_quantity(), ant.get_total_exploration_count())
+            (ant, ant.get_food_quantity(), ant.get_exploration_fitness())
             for ant in self.__ants
         ]
         # Trier selon la nourriture récoltée (meilleurs travailleurs)
@@ -225,6 +212,9 @@ class Civilization:
         self.steps += 1
         if self.steps == self.__half_pheromone_time:
             self.halve_pheromone()
+        # if self.steps > 1:
+        #     for ant in self.__ants:
+        #         ant.set_exploration_fitness()
 
         # Évaporation des phéromones
         for road in self.__roads:
@@ -242,18 +232,27 @@ class Civilization:
 
                     # CHANGEMENT ICI: Commencer immédiatement le chemin de retour
                     if ant.get_explored_roads():
-                        for road in ant.get_explored_roads():
-                            if road not in ant.get_explored_roads_count():
-                                ant.add_explored_roads_count(road)
-                            ant.increment_explored_roads(road)
-                        if (
-                            tuple(ant.get_explored_roads())
-                            not in ant.get_explored_roads_count()
+                        new_road = tuple(
+                            [road.get_id() for road in ant.get_explored_roads()]
+                        )
+
+                        def compare_keys(tuple1, tuple2):
+                            for i in range(len(tuple1)):
+                                if (
+                                    tuple1[i][0] != tuple2[i][0]
+                                    or tuple1[i][1] != tuple2[i][1]
+                                ):
+                                    return False
+                            return True
+
+                        if any(
+                            compare_keys(new_road, key)
+                            for key in ant.get_explored_roads_count().keys()
                         ):
-                            ant.add_explored_roads_count(
-                                tuple(ant.get_explored_roads())
-                            )
-                        ant.increment_explored_roads(tuple(ant.get_explored_roads()))
+                            ant.increment_explored_roads(new_road)
+                        else:
+                            ant.add_explored_roads_count(new_road)
+                            ant.increment_explored_roads(new_road)
                         next_road = ant.get_explored_roads()[-1].reverse()
                         next_city = next_road.get_cities()[1]
                         ant.set_next_city(next_city)
@@ -358,21 +357,25 @@ class Civilization:
         return path
 
     def genetic_algo_application(self):
-        for i in range(200):
+        for i in range(self.__steps_genetic_algo):
             self.step()
+        # for ant in self.__ants:
+        #     ant.set_exploration_fitness()
         threshold_genetic_algo = self.__threshold_genetic_algo
         while threshold_genetic_algo > 0:
             print("iteration : ", threshold_genetic_algo)
             self.genetic_algo()
             for ant in self.__ants:
                 ant.reset_ant()
-            for i in range(200):
+            for i in range(self.__steps_genetic_algo):
                 self.step()
+            # for ant in self.__ants:
+            #     ant.set_exploration_fitness()
             threshold_genetic_algo -= 1
 
     def best_worker(self):
         ants_data = [
-            (ant, ant.get_food_quantity(), ant.get_total_exploration_count())
+            (ant, ant.get_food_quantity(), ant.get_exploration_fitness())
             for ant in self.__ants
         ]
         # Trier selon la nourriture récoltée (meilleurs travailleurs)
@@ -381,7 +384,7 @@ class Civilization:
 
     def best_explorer(self):
         ants_data = [
-            (ant, ant.get_food_quantity(), ant.get_total_exploration_count())
+            (ant, ant.get_food_quantity(), ant.get_exploration_fitness())
             for ant in self.__ants
         ]
         # Trier selon la nourriture récoltée (meilleurs travailleurs)

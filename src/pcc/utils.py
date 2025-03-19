@@ -1,3 +1,4 @@
+import random
 import sys
 
 from PyQt5.QtCore import QPointF
@@ -18,7 +19,7 @@ def get_small_civ_pcc():
 
     cities = [City(i) for i in range(4)]
 
-    civ = Civilization(cities[0], cities[-1], 0.05, 0.1, 0.2, 0.2, 0.2)
+    civ = Civilization(cities[0], cities[-1], 0.05, 0.1, 0.1, 30)
 
     for i in range(1, nb_cities - 1):
         civ.add_city(cities[i])
@@ -27,9 +28,8 @@ def get_small_civ_pcc():
     civ.add_road(2.0, cities[1], cities[2])
     civ.add_road(3.0, cities[1], cities[3])
     civ.add_road(4.0, cities[2], cities[3])
-
-    civ.create_ant_colony(1, 10, 0)
-
+    for i in range(50):
+        civ.create_ant_colony(1, random.uniform(0, 5), random.uniform(0, 5))
     return civ
 
 
@@ -38,7 +38,7 @@ def get_big_civ_pcc():
 
     cities = [City(i) for i in range(nb_cities)]
 
-    civ = Civilization(cities[0], cities[-1], 0.05, 0.1, 0.7, 0.2, 0.5)
+    civ = Civilization(cities[0], cities[-1], 0.05, 0.1, 0.1, 50)
 
     for i in range(1, nb_cities - 1):
         civ.add_city(cities[i])
@@ -63,8 +63,8 @@ def get_big_civ_pcc():
     civ.add_road(4.0, cities[1], cities[6])
     civ.add_road(5.0, cities[2], cities[8])
 
-    civ.create_ant_colony(30, 0.1, 5)
-
+    for i in range(50):
+        civ.create_ant_colony(1, random.uniform(0, 5), random.uniform(0, 5))
     return civ
 
 
@@ -73,7 +73,7 @@ def get_really_big_civ_pcc():
     cities = [City(i) for i in range(nb_cities)]
 
     # Le nid est la première ville et la source de nourriture la dernière.
-    civ = Civilization(cities[0], cities[-1], 0.05, 0.1, 0.2, 0.2, 0.2)
+    civ = Civilization(cities[0], cities[-1], 0.05, 0.1, 0.1, 100)
 
     # Ajouter les villes intermédiaires
     for i in range(1, nb_cities - 1):
@@ -118,14 +118,15 @@ def get_really_big_civ_pcc():
     civ.add_road(5.0, cities[8], cities[16])
     civ.add_road(6.0, cities[3], cities[10])
 
-    civ.create_ant_colony(100, 0.5, 0.5)
+    for i in range(50):
+        civ.create_ant_colony(1, random.uniform(0, 5), random.uniform(0, 5))
     return civ
 
 
 def get_empty_civ_pcc():
     nest = City(0, QPointF(500, 400))
     food_source = City(99, QPointF(1500, 400))
-    civ = Civilization(nest, food_source, 0.05, 0.1, 0.2, 0.2, 0.2)
+    civ = Civilization(nest, food_source, 0.05, 0.1, 0.1, 50)
     return civ
 
 

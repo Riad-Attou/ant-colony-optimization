@@ -245,11 +245,6 @@ class Civilization:
                 and self.steps > 1
             ):
                 ant.set_food_quantity()
-                # ant.set_cumulated_weights(
-                #     sum([road.get_weight() for road in ant.get_explored_roads()])
-                # )
-                # for road in ant.get_explored_roads():
-                #     ant.deposit_pheromone(road)
                 if (
                     tuple(ant.get_explored_roads())
                     not in ant.get_explored_roads_count()

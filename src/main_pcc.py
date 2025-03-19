@@ -13,9 +13,9 @@ if __name__ == "__main__":
     ###########################
     # PCC AVEC UNE VILLE FIXE #
     ###########################
-    # civ = get_small_civ_pcc()
+    civ = get_small_civ_pcc()
     # civ = get_really_big_civ_pcc()
-    civ = get_big_civ_pcc()
+    # civ = get_big_civ_pcc()
     main(civ, edition_mode=False)
 
     ####################################
