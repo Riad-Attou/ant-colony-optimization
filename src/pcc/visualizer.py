@@ -894,7 +894,7 @@ class BaseCanvas(QOpenGLWidget):
             best_path = self.civ.get_best_path()
             if best_path:
                 path_text = "→".join(str(city.get_id()) for city in best_path)
-                self.best_path_text = "Chemin Optimal (Genetique): " + path_text
+                self.best_path_text = "Chemin Optimal: " + path_text
 
             # Préparer le texte des résultats avec plus d'espacement
             results_text = (
