@@ -242,6 +242,8 @@ class BaseCanvas(QOpenGLWidget):
         }
         self.best_path_text = "Chemin Optimal: N/A"
         self.show_road_text = True
+        self.best_path = None
+        self.step_without_change = 0
 
         # Initialisation commune des widgets (paramètres des fourmis)
         self.init_input_widgets()
@@ -813,6 +815,27 @@ class BaseCanvas(QOpenGLWidget):
                 # Première partie : exécuter nb_iteration fois step()
                 for _ in range(nb_iteration):
                     self.civ.step()
+                    best_path_has_changed = False
+
+                    if self.best_path is None:
+                        self.best_path = self.civ.get_best_path()
+                    else:
+                        new_best_path = self.civ.get_best_path()
+                        for i in range(len(new_best_path)):
+                            if new_best_path[i].get_id() != self.best_path[i].get_id():
+                                best_path_has_changed = True
+                                self.step_without_change = 0
+                                self.best_path = new_best_path
+                                break
+
+                    if not best_path_has_changed:
+                        self.step_without_change += 1
+
+                    if not best_path_has_changed and self.step_without_change == 20:
+                        print("CONVERGENCE ATTEINTE :", self.civ.steps - 20)
+
+                    if best_path_has_changed:
+                        self.best_path = new_best_path
 
                 # Boucle principale de l'algorithme génétique
                 threshold_genetic_algo = threshold_initial
@@ -842,6 +865,39 @@ class BaseCanvas(QOpenGLWidget):
                     # Exécuter nb_iteration fois step()
                     for _ in range(nb_iteration):
                         self.civ.step()
+                        best_path_has_changed = False
+                        self.best_path = None
+
+                        if self.best_path is None:
+                            self.best_path = self.civ.get_best_path()
+                        else:
+                            new_best_path = self.civ.get_best_path()
+                            for i in range(len(new_best_path)):
+                                if (
+                                    new_best_path[i].get_id()
+                                    != self.best_path[i].get_id()
+                                ):
+                                    best_path_has_changed = True
+                                    self.step_without_change = 0
+                                    self.best_path = new_best_path
+                                    break
+
+                        if not best_path_has_changed:
+                            self.step_without_change += 1
+
+                        if not best_path_has_changed and self.step_without_change == 20:
+                            print("CONVERGENCE ATTEINTE :", self.civ.steps - 20)
+
+                        if best_path_has_changed:
+                            self.best_path = new_best_path
+
+                        if self.best_path is not None:
+                            print(
+                                [
+                                    self.best_path[i].get_id()
+                                    for i in range(len(self.best_path))
+                                ]
+                            )
 
                     threshold_genetic_algo -= 1
 

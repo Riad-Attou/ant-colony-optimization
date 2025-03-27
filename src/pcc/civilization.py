@@ -357,6 +357,7 @@ class Civilization:
     def genetic_algo_application(self):
         for i in range(self.__steps_genetic_algo):
             self.step()
+
         threshold_genetic_algo = self.__threshold_genetic_algo
         while threshold_genetic_algo > 0:
             self.genetic_algo()
