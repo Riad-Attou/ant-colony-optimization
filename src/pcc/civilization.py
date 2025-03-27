@@ -210,15 +210,14 @@ class Civilization:
 
     def step(self):
         self.steps += 1
+
         if self.steps == self.__half_pheromone_time:
             self.halve_pheromone()
-        # if self.steps > 1:
-        #     for ant in self.__ants:
-        #         ant.set_exploration_fitness()
 
         # Évaporation des phéromones
         for road in self.__roads:
             road.evaporate_pheromone()
+
         for ant in self.__ants:
             # RECHERCHE DE NOURRITURE
             if not ant.has_food():
@@ -230,7 +229,7 @@ class Civilization:
                         sum([road.get_weight() for road in ant.get_explored_roads()])
                     )
 
-                    # CHANGEMENT ICI: Commencer immédiatement le chemin de retour
+                    # Commencer immédiatement le chemin de retour
                     if ant.get_explored_roads():
                         new_road = tuple(
                             [road.get_id() for road in ant.get_explored_roads()]
@@ -284,7 +283,7 @@ class Civilization:
                     ant.set_has_food(False)
                     ant.set_cumulated_weights(0)
 
-                    # CHANGEMENT ICI: Choisir immédiatement une nouvelle destination
+                    # Choisir immédiatement une nouvelle destination
                     outgoing_roads = ant.get_current_city().get_roads()
                     if outgoing_roads:
                         next_road = ant.weighted_choice(outgoing_roads)
@@ -319,7 +318,7 @@ class Civilization:
     def get_best_path(self):
         """
         Retourne une liste des City qui représente le meilleur chemin
-        actuel de la source (nid) vers la food_source, en suivant la route
+        actuel du nid vers la food_source, en suivant la route
         ayant la plus forte quantité de phéromone à chaque étape.
         """
         path = []
@@ -331,11 +330,10 @@ class Civilization:
         while current_city != self.__food_source:
             outgoing_roads = current_city.get_roads()
             best_road = None
-            best_pheromone = -1  # On part d'une valeur très basse
+            best_pheromone = -1
 
             # Parcourir les routes sortantes
             for road in outgoing_roads:
-                # On suppose que road.get_cities() renvoie un tuple (start, end)
                 _, dest = road.get_cities()
                 # Évite de repasser par une ville déjà visitée pour limiter les cycles
                 if dest in visited:
@@ -345,7 +343,7 @@ class Civilization:
                     best_road = road
 
             if best_road is None:
-                # Aucun chemin (sans cycle) n'a été trouvé ; on arrête la recherche.
+                # Aucun chemin (sans cycle) n'a été trouvé
                 break
 
             # On choisit la destination de la route avec le maximum de phéromones.
