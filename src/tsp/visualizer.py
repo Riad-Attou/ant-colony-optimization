@@ -837,6 +837,10 @@ class BaseCanvas(QOpenGLWidget):
                     for ant in self.civ.get_ants():
                         ant.reset_ant()
 
+                    # Reset les phéromones
+                    for road in self.civ.get_roads():
+                        road.reset_pheromone(self.civ.get_initial_pheromone())
+
                     # Exécuter nb_iteration fois step()
                     for _ in range(nb_iteration):
                         self.civ.step()
