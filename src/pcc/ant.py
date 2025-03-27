@@ -133,10 +133,6 @@ class Ant:
         return
 
     def weighted_choice(self, roads):
-        weights_without_alpha = [
-            (road.get_pheromone()) * ((1 / road.get_weight()) ** self.__beta)
-            for road in roads
-        ]
         # Récupère les poids en utilisant alpha et beta
         weights = [
             (road.get_pheromone() ** self.__alpha)
@@ -150,7 +146,11 @@ class Ant:
             return random.choice(roads)
         if q <= self.__q0:
             # Exploitation : sélection de la route avec le poids maximal
-            return random.choices(roads, weights=weights_without_alpha, k=1)[0]
+            return max(
+                roads,
+                key=lambda road: (road.get_pheromone())
+                * ((1 / road.get_weight()) ** self.__beta),
+            )
         else:
             # Exploration : sélection d'une route selon les probabilités P_k(r,s)
             return random.choices(roads, weights=probabilities, k=1)[0]
