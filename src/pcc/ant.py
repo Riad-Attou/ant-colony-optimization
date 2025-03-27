@@ -22,12 +22,6 @@ class Ant:
         self.__food_quantity = 0
         self.__explored_roads_count = {}
         self.__q0 = 0.5
-        self.__exploration_weight = 1  # favorise le nombre d’arêtes explorées
-        self.__rarity_bonus = 0  # favorise les arêtes rares
-        self.__redundancy_penalty = (
-            0  # pénalise le fait de repasser sur les mêmes arêtes
-        )
-        self.__exploration_fitness = 0
         self.__color = None
 
     def get_id(self):
@@ -48,9 +42,6 @@ class Ant:
 
     def get_speed(self):
         return self.__speed
-
-    def get_t(self):
-        return self.__t
 
     def set_cumulated_weights(self, cumulated_weights: float):
         self.__cumulated_weights = cumulated_weights
@@ -81,46 +72,6 @@ class Ant:
     def get_exploration_fitness(self):
         return len(self.__explored_roads_count)
 
-    # def set_exploration_fitness(self, population):
-    #     explored_roads_count = self.__explored_roads_count
-    #     self_edges = set(explored_roads_count.keys())  # Arêtes explorées par self
-    #     if len(population) <= 1:  # Si la population est vide ou ne contient que self
-    #         unique_roads_count = len(
-    #             self_edges
-    #         )  # Toutes les routes explorées sont uniques
-    #         unique_roads = list(self_edges)
-    #     else:
-    #         unique_roads_count = 0
-    #         unique_roads = []
-    #         for ant in population:
-    #             if ant is self:
-    #                 continue  # Ne pas comparer la fourmi avec elle-même
-
-    #             other_edges = set(ant.get_explored_roads_count().keys())
-    #             for road in self_edges - other_edges:
-    #                 if road not in unique_roads:
-    #                     unique_roads.append(road)
-    #                     unique_roads_count += 1
-
-    #     # Compter combien de fois chaque arête est empruntée dans la population
-    #     fitness = (
-    #         self.__exploration_weight * unique_roads_count
-    #         + self.__rarity_bonus
-    #         * sum(1 / (1 + road.get_usage_count(population)) for road in unique_roads)
-    #         - self.__redundancy_penalty
-    #         * sum(
-    #             road.get_usage_count(population) / len(explored_roads_count)
-    #             for road in self_edges
-    #         )
-    #     )
-    #     self.__exploration_fitness = fitness
-
-    # def set_exploration_fitness(self):
-    #     explored_roads_count = self.__explored_roads_count
-    #     self.__exploration_fitness = len(explored_roads_count) / sum(
-    #         explored_roads_count.values()
-    #     )
-
     def reset_ant(self):
         self.__current_city = self.__start_city
         self.__next_city = None
@@ -129,7 +80,6 @@ class Ant:
         self.__food_quantity = 0
         self.__explored_roads_count = {}
         self.__has_food = False
-        self.__exploration_fitness = 0
 
     def get_next_city(self):
         return self.__next_city
@@ -183,6 +133,10 @@ class Ant:
         return
 
     def weighted_choice(self, roads):
+        weights_without_alpha = [
+            (road.get_pheromone()) * ((1 / road.get_weight()) ** self.__beta)
+            for road in roads
+        ]
         # Récupère les poids en utilisant alpha et beta
         weights = [
             (road.get_pheromone() ** self.__alpha)
@@ -196,8 +150,7 @@ class Ant:
             return random.choice(roads)
         if q <= self.__q0:
             # Exploitation : sélection de la route avec le poids maximal
-            best_road_index = weights.index(max(weights))
-            return roads[best_road_index]
+            return random.choices(roads, weights=weights_without_alpha, k=1)[0]
         else:
             # Exploration : sélection d'une route selon les probabilités P_k(r,s)
             return random.choices(roads, weights=probabilities, k=1)[0]

@@ -20,9 +20,6 @@ class Road:
     def get_pheromone(self):
         return self.__pheromone
 
-    def get_initial_pheromone(self):
-        return self.__initial_pheromone
-
     def add_pheromone(self, pheromone: float):
         self.__pheromone += pheromone
         return
@@ -41,19 +38,6 @@ class Road:
         rho = 0.05
         self.__pheromone *= 1 - rho
         return
-
-    def get_usage_count(self, population):
-        """Calcule le nombre total de passages sur cette route par toutes les fourmis."""
-        usage_count = 0
-        for ant in population:
-            explored_roads_count = ant.get_explored_roads_count()
-            if (
-                self in explored_roads_count.keys()
-            ):  # Vérifie si la route a été explorée par la fourmi
-                usage_count += explored_roads_count[
-                    self
-                ]  # Ajoute le nombre de passages
-        return usage_count
 
     def reverse(self):
         return Road(self.__weight, self.__end_city, self.__start_city, self.__pheromone)

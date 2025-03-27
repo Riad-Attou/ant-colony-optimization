@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (
     QCheckBox,
     QColorDialog,
     QFormLayout,
+    QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -19,7 +20,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from tsp.city import City
+from pcc.city import City
 
 
 class Visualizer(QWidget):
@@ -28,7 +29,9 @@ class Visualizer(QWidget):
         civ: une instance de la classe Civilization.
         """
         super().__init__()
-        self.setWindowTitle("Ant Colony Simulation - TSP")
+
+        self.selected_color = None
+        self.setWindowTitle("Ant Colony Simulation - PCC")
         self.setMinimumSize(800, 600)
         self.setWindowIcon(QIcon("assets/logo.webp"))
 
@@ -43,122 +46,173 @@ class Visualizer(QWidget):
         self.canvas.setGeometry(0, 0, self.width(), self.height())
         self.canvas.show()
 
+        self.show_text = QGroupBox(self)
+        self.show_text.setGeometry(1560, 300, 240, 85)
+        self.show_text.setStyleSheet(
+            """
+            QGroupBox {
+                background-color: #282828;
+                border-radius: 20px;
+                padding: 15px;
+                font-family: Roboto;
+                border: 5px solid rgba(255, 255, 255, 0.2);
+                font-size: 26px;
+            }
+            """
+        )
+        show_text_layout = QVBoxLayout(self.show_text)
+
         # Interrupteur (CheckBox) pour afficher/masquer le texte sous les routes
-        self.road_text_checkbox = QCheckBox("Show Road Text", self)
-        self.road_text_checkbox.setFont(QFont("Roboto", 8))
+        self.road_text_checkbox = QCheckBox("Cacher texte", self)
+        self.road_text_checkbox.setFont(QFont("Roboto", 8, 5))
         self.road_text_checkbox.setChecked(True)
-        self.road_text_checkbox.setGeometry(self.width() - 170, 80, 150, 20)
         self.road_text_checkbox.stateChanged.connect(self.toggleRoadText)
-        self.road_text_checkbox.setStyleSheet("color: white;")
+        self.road_text_checkbox.setStyleSheet("color: white;font-weight: bold; ")
 
-        # S'assurer que ces widgets overlay restent au premier plan
+        self.road_text_checkbox.setStyleSheet(
+            """
+            QCheckBox {
+                color: white;  /* Couleur du texte */
+                font-weight: bold;
+            }
+            QCheckBox::indicator {
+                background-color: white;  /* Fond de la case quand elle est décochée */
+                width: 20px;
+                height: 20px;
+            }
+            QCheckBox::indicator:checked {
+                background-color: #4CAF50;  /* Fond de la case quand elle est cochée */
+            }
+        """
+        )
+
         self.road_text_checkbox.raise_()
+        show_text_layout.addWidget(self.road_text_checkbox)
 
-        # Ajouter un nouveau groupe pour l'algorithme génétique
+        # Création du groupe pour l'algorithme génétique
         self.genetic_group = QGroupBox("Algorithme Génétique", self)
-        self.genetic_group.setGeometry(
-            self.width() - 300, 100, 280, 400
-        )  # Hauteur à 400
+        self.genetic_group.setGeometry(100, 600, 300, 450)
         self.genetic_group.setStyleSheet(
             """
             QGroupBox {
-                background-color: rgba(40, 40, 40, 0.8);
-                border-radius: 10px;
+                background-color: #282828;
+                border-radius: 20px;
                 padding: 15px;
                 font-family: Roboto;
-                font-size: 16px;
                 color: white;
+                border: 5px solid rgba(255, 255, 255, 0.2);
+                font-size: 26px;
+                margin-top: 25px;
             }
             QGroupBox::title {
-                font-size: 18px;
+                font-size: 26px;
                 font-weight: bold;
+                color: white;
+                padding: 5px;
                 subcontrol-origin: margin;
                 subcontrol-position: top center;
-                color: white;
-                font-family: 'Roboto';
-                padding: 5px;
+                top: 5px;
             }
             """
         )
 
-        # Créer un layout pour le groupe
+        # Layout principal
         genetic_layout = QVBoxLayout(self.genetic_group)
+        genetic_layout.addSpacing(5)
 
-        # Bouton pour lancer l'algorithme génétique
-        self.genetic_button = QPushButton("Lancer Algo. Génétique")
-        self.genetic_button.setMinimumHeight(40)
+        # Bouton pour lancer l'algorithme
+        self.genetic_button = QPushButton("▶ Lancer l'Algorithme")
+        self.genetic_button.setMinimumHeight(45)
         self.genetic_button.clicked.connect(self.canvas.launch_genetic_algorithm)
         self.genetic_button.setStyleSheet(
             """
-            background-color: #3498db;
-            color: white;
-            border-radius: 5px;
-            padding: 8px;
-            font-weight: bold;
-            font-size: 14px;
+            QPushButton {
+                background-color: #4CAF50;
+                color: white;
+                border-radius: 10px;
+                padding: 10px;
+                font-size: 20px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
             """
         )
         genetic_layout.addWidget(self.genetic_button)
+        genetic_layout.addSpacing(5)
 
-        # Créer une zone de défilement pour les résultats
+        # Zone de défilement pour les résultats
         self.results_scroll = QScrollArea()
         self.results_scroll.setWidgetResizable(True)
+
         self.results_scroll.setStyleSheet(
             """
             QScrollArea {
-                background-color: rgba(0, 0, 0, 0.3);
-                border-radius: 5px;
-                border: none;
+                background-color: white;
+                border-radius: 20px;
             }
             QScrollBar:vertical {
                 width: 10px;
-                background: rgba(0, 0, 0, 0.2);
-                border-radius: 5px;
+                background: #333333;
             }
             QScrollBar::handle:vertical {
-                background: rgba(100, 100, 100, 0.5);
-                border-radius: 5px;
+                background: #666666;
+                border-radius: 20px;
             }
             """
         )
-        self.results_scroll.setMinimumHeight(300)
+        self.results_scroll.setMinimumHeight(280)
 
-        # Créer le label qui contiendra le texte des résultats
-        self.results_area = QLabel(
-            "Résultats de l'algorithme génétique s'afficheront ici."
+        # Conteneur pour le QLabel (nécessaire pour que la couleur de fond s'affiche correctement)
+        self.results_container = QWidget()
+        self.results_container.setStyleSheet(
+            """
+            background-color: rgb(255,255,255,0.2); 
+            padding: 10px; /* Ajoute un espace pour bien voir la différence */
+            border-radius: 10px;
+            """
         )
+        # Layout pour contenir le QLabel
+        self.results_layout = QVBoxLayout(self.results_container)
+
+        # Label pour afficher les résultats
+        self.results_area = QLabel("Les résultats apparaîtront ici...")
         self.results_area.setStyleSheet(
             """
-            color: white;
+            background-color: rgb(255,255,255,0.2);  /* Intérieur = même couleur que la bordure */
+            color: #282828;
             padding: 10px;
-            font-size: 13px;
-            background: transparent;
+            font-size: 20px;
+            border-radius: 10px;
             """
         )
         self.results_area.setWordWrap(True)
-        self.results_area.setTextFormat(Qt.RichText)
         self.results_area.setAlignment(Qt.AlignTop | Qt.AlignLeft)
-        self.results_area.setContentsMargins(10, 10, 10, 10)
 
-        # Ajouter le label au scroll area
-        self.results_scroll.setWidget(self.results_area)
+        # Ajouter QLabel au conteneur
+        self.results_layout.addWidget(self.results_area)
+
+        # Assigner le conteneur à la QScrollArea
+        self.results_scroll.setWidget(self.results_container)
+
+        # Ajouter la zone de défilement au layout principal
         genetic_layout.addWidget(self.results_scroll)
+
+        genetic_layout.addSpacing(5)
 
         # Compteur d'itérations
         self.iteration_counter = QLabel("Itérations: --")
-        self.iteration_counter.setStyleSheet("color: white; font-size: 14px;")
+        self.iteration_counter.setStyleSheet(
+            "color: white; font-size: 20px;font-weight: bold;"
+        )
         genetic_layout.addWidget(self.iteration_counter)
 
-        # S'assurer que le groupe reste au premier plan
+        # Remettre le groupe au premier plan
         self.genetic_group.raise_()
 
     def resizeEvent(self, event):
-        # Repositionner le canvas et les contrôles lors d'un redimensionnement
         self.canvas.setGeometry(0, 0, self.width(), self.height())
-        self.road_text_checkbox.setGeometry(self.width() - 170, 80, 150, 20)
-        self.genetic_group.setGeometry(
-            self.width() - 300, 120, 280, 400
-        )  # Augmenter la hauteur à 400
+        self.genetic_group.setGeometry(60, 550, 395, 500)
         super().resizeEvent(event)
 
     def toggleRoadText(self, state):
@@ -186,62 +240,84 @@ class BaseCanvas(QOpenGLWidget):
             ant: self.start_time + i * self.ant_launch_delta
             for i, ant in enumerate(self.ants)
         }
-        self.best_path_text = "Best Path: N/A"
+        self.best_path_text = "Chemin Optimal: N/A"
         self.show_road_text = True
 
         # Initialisation commune des widgets (paramètres des fourmis)
         self.init_input_widgets()
 
     def init_input_widgets(self):
-        """Initialise les éléments d’interface pour configurer les paramètres des fourmis."""
-        self.input_group = QGroupBox("Ants parameters", self)
-        self.input_group.setGeometry(100, 100, 350, 400)
+        """Initialise les éléments d'interface pour configurer les paramètres des fourmis."""
+        self.input_group = QGroupBox("Personnaliser la colonie", self)
         self.input_group.setStyleSheet(
             """
             QGroupBox {
-                background-color: grey;
-                border-radius: 10px;
-                padding: 10px;
+                background-color: #282828;
+                border-radius: 15px;
+                padding: 15px;
                 font-family: Roboto;
-                font-size: 20px;
+                color: white;
+                border: 5px solid rgba(255, 255, 255, 0.2);
+                font-size: 26px;
+                margin-top: 25px;
             }
             QGroupBox::title {
-                font-size: 30px;
+                font-size: 26px;
                 font-weight: bold;
                 subcontrol-origin: margin;
                 subcontrol-position: top center;
-                color: #2c3e50;
+                color: white;
                 font-family: 'Roboto';
+                top : 10px;
             }
         """
         )
+        # Layout principal
         main_layout = QVBoxLayout(self.input_group)
-        form_layout = QFormLayout()
 
+        # Utiliser un QGridLayout pour un meilleur contrôle
+        grid_layout = QGridLayout()
+        grid_layout.setHorizontalSpacing(50)  # Espacement horizontal entre les colonnes
+
+        # Créer les champs d'entrée
         self.size_input = QLineEdit()
         self.alpha_input = QLineEdit()
         self.beta_input = QLineEdit()
-        self.gamma_input = QLineEdit()
 
-        # Fixer une taille uniforme aux QLineEdit
-        for line_edit in (
-            self.size_input,
-            self.alpha_input,
-            self.beta_input,
-            self.gamma_input,
-        ):
-            line_edit.setFixedWidth(120)
+        # Uniformiser la taille des champs
+        for line_edit in (self.size_input, self.alpha_input, self.beta_input):
+            line_edit.setFixedWidth(100)
+            line_edit.setStyleSheet("padding: 5px; border-radius: 5px;")
 
-        form_layout.addRow(QLabel("Nombre de fourmis:"), self.size_input)
-        form_layout.addRow(QLabel("Alpha:"), self.alpha_input)
-        form_layout.addRow(QLabel("Beta:"), self.beta_input)
-        form_layout.addRow(QLabel("Gamma:"), self.gamma_input)
-        main_layout.addLayout(form_layout)
+        # Ajouter un espacement en haut
+        main_layout.addSpacing(30)
 
-        # Bouton pour choisir une couleur avec affichage du résultat
+        # Créer les labels avec une largeur fixe suffisante
+        label_nombre = QLabel("Nombre de fourmis:")
+        label_nombre.setMinimumWidth(180)  # Fixer une largeur minimale
+        label_alpha = QLabel("Alpha:")
+        label_alpha.setMinimumWidth(150)
+        label_beta = QLabel("Beta:")
+        label_beta.setMinimumWidth(150)
+
+        # Ajouter les labels et champs au grid layout
+        grid_layout.addWidget(label_nombre, 0, 0, Qt.AlignLeft)
+        grid_layout.addWidget(self.size_input, 0, 1)
+
+        grid_layout.addWidget(label_alpha, 1, 0, Qt.AlignLeft)
+        grid_layout.addWidget(self.alpha_input, 1, 1)
+
+        grid_layout.addWidget(label_beta, 2, 0, Qt.AlignLeft)
+        grid_layout.addWidget(self.beta_input, 2, 1)
+
+        # Ajouter le grid layout au layout principal
+        main_layout.addLayout(grid_layout)
+
+        main_layout.addSpacing(30)
+        # Sélection de couleur
         color_layout = QHBoxLayout()
         self.color_button = QPushButton("Choisir une couleur")
-        self.color_button.setFixedSize(150, 30)
+        self.color_button.setFixedSize(160, 35)
         self.color_button.clicked.connect(self.choose_color)
         self.color_display = QLabel()
         self.color_display.setFixedSize(40, 40)
@@ -251,16 +327,14 @@ class BaseCanvas(QOpenGLWidget):
         color_layout.addWidget(self.color_button)
         color_layout.addWidget(self.color_display)
         main_layout.addLayout(color_layout)
-
+        main_layout.addSpacing(30)
         # Slider pour la vitesse des fourmis
         speed_layout = QHBoxLayout()
         self.speed_slider = QSlider(Qt.Horizontal, self)
-        if self.is_edition_mode:
-            self.speed_label = QLabel("Ant Speed: 0", self)
-            self.speed_slider.setValue(0)
-        else:
-            self.speed_label = QLabel("Ant Speed: 1", self)
-            self.speed_slider.setValue(1)
+        self.speed_label = QLabel(
+            f"Vitesse fourmis: {1 if not self.is_edition_mode else 0}", self
+        )
+        self.speed_slider.setValue(1 if not self.is_edition_mode else 0)
         self.speed_slider.setMinimum(0)
         self.speed_slider.setMaximum(30)
         self.speed_slider.setTickInterval(2)
@@ -269,21 +343,38 @@ class BaseCanvas(QOpenGLWidget):
         speed_layout.addWidget(self.speed_label)
         speed_layout.addWidget(self.speed_slider)
         main_layout.addLayout(speed_layout)
-
+        # Espacement avant les boutons
+        main_layout.addSpacing(50)
         # Boutons "Ajouter" et "Valider"
         button_layout = QHBoxLayout()
         self.add_button = QPushButton("Ajouter")
-        self.add_button.setFixedSize(100, 30)
+        self.add_button.setFixedSize(120, 35)
         self.add_button.clicked.connect(self.compose_colony_ants)
         self.validate_button = QPushButton("Valider")
-        self.validate_button.setFixedSize(100, 30)
+        self.validate_button.setFixedSize(120, 35)
         self.validate_button.clicked.connect(self.start_animation_after_composition)
         button_layout.addWidget(self.add_button)
         button_layout.addWidget(self.validate_button)
         main_layout.addLayout(button_layout)
 
-        self.first_composition_done = False
+        # Définir une taille fixe pour le QGroupBox
+        self.input_group.adjustSize()  # Ajuste la taille au contenu
 
+        # Positionner à des coordonnées X,Y spécifiques
+        # Utilisez setGeometry(x, y, width, height) ou move(x, y)
+        x_position = 60  # Position X à 20 pixels du bord gauche
+        y_position = 43  # Position Y à 50 pixels du haut
+
+        # Option 1: move() positionne le widget aux coordonnées spécifiées
+        self.input_group.move(x_position, y_position)
+
+        # OU Option 2: setGeometry() définit position et taille
+        # width = self.input_group.width()
+        # height = self.input_group.height()
+        # self.input_group.setGeometry(x_position, y_position, width, height)
+
+        # Le widget est directement ajouté à la fenêtre principale sans layout
+        self.first_composition_done = False
         self.apply_styles()
 
     def apply_styles(self):
@@ -301,7 +392,7 @@ class BaseCanvas(QOpenGLWidget):
                 padding: 5px;
             }
             QPushButton {
-                background-color: #2ecc71;
+                background-color:  #4CAF50;
                 color: white;
                 border-radius: 5px;
                 padding: 5px;
@@ -316,10 +407,96 @@ class BaseCanvas(QOpenGLWidget):
             self.color_display.setStyleSheet(
                 f"background-color: {color.name()}; border: 1px solid black; border-radius: 20px;"
             )
+        self.selected_color = color
+
+    def display_best_path_window(self):
+        """Affiche ou met à jour la fenêtre du meilleur chemin sans ralentir l'animation."""
+
+        # Désactiver les mises à jour pour éviter les lags
+        self.setUpdatesEnabled(False)
+
+        # Extraire les identifiants des villes
+        city_ids = self.best_path_text.replace("Chemin Optimal: ", "").split("→")
+
+        # Vérifier si le widget existe déjà
+        if hasattr(self, "path_display"):
+            # Nettoyer l'ancien contenu pour éviter de recréer des widgets
+            for i in reversed(range(self.path_display_layout.count())):
+                self.path_display_layout.itemAt(i).widget().deleteLater()
+        else:
+            # Créer un QGroupBox seulement si ce n'est pas déjà fait
+            self.path_display = QGroupBox("Chemin Optimal", self)
+            self.path_display.setStyleSheet(
+                """
+                QGroupBox {
+                    background-color: #282828;
+                    border-radius: 15px;
+                    padding: 15px;
+                    font-family: Roboto;
+                    color: white;
+                    border: 5px solid rgba(255, 255, 255, 0.2);
+                    font-size: 26px;
+                    margin-top: 25px;
+                }
+                QGroupBox::title {
+                    font-size: 26px;
+                    font-weight: bold;
+                    subcontrol-origin: margin;
+                    subcontrol-position: top center;
+                    color: white;
+                    font-family: 'Roboto';
+                    top: 10px;  /* Move the title down a bit */
+                }
+                """
+            )
+            self.path_display_layout = QVBoxLayout(self.path_display)
+
+        # Création d'un widget contenant le chemin
+        path_widget = QWidget()
+        path_widget.setStyleSheet(
+            "background-color: #333333; border-radius: 10px; padding: 15px;"
+        )
+
+        path_flow = QHBoxLayout(path_widget)
+        path_flow.setSpacing(15)
+        path_flow.setAlignment(Qt.AlignCenter)
+        path_flow.setContentsMargins(10, 10, 10, 10)
+
+        # Ajouter chaque ville avec une flèche entre elles
+        for i, city_id in enumerate(city_ids):
+            city_label = QLabel(city_id)
+            city_label.setFixedSize(60, 60)
+            city_label.setStyleSheet(
+                """
+                background-color: #4CAF50;
+                color: white;
+                font-weight: bold;
+                border-radius: 20px;
+                font-size: 16px;
+                qproperty-alignment: AlignCenter;
+                """
+            )
+            path_flow.addWidget(city_label)
+
+            if i < len(city_ids) - 1:
+                arrow = QLabel("→")
+                arrow.setStyleSheet("color: white; font-size: 24px;")
+                path_flow.addWidget(arrow)
+
+        # Ajouter le widget du chemin à la layout principale
+        self.path_display_layout.addWidget(path_widget)
+
+        # Positionner et afficher
+        self.path_display.setFixedWidth(1260)
+        self.path_display.move(540, 40)
+        self.path_display.show()
+
+        # Réactiver les mises à jour
+        self.setUpdatesEnabled(True)
 
     def updateAntSpeed(self, value):
         """Met à jour le label et la vitesse des fourmis."""
-        self.speed_label.setText(f"Ant Speed: {value}")
+        self.speed_label.setText(f"Vitesse fourmis: {value}")
         self.setAntSpeed(value)
 
     def compose_colony_ants(self):
@@ -329,9 +506,11 @@ class BaseCanvas(QOpenGLWidget):
         try:
             colony_size = int(self.size_input.text())
             alpha = float(self.alpha_input.text())
-            gamma = float(self.gamma_input.text())
             beta = float(self.beta_input.text())
-            self.civ.create_ant_colony(colony_size, alpha, gamma, beta)
+            self.civ.create_ant_colony(colony_size, alpha, beta)
+            for ant in self.civ.get_ants():
+                if ant.get_personalised_color() == None:
+                    ant.set_color(self.selected_color)
         except ValueError:
             self.result_label.setText("Veuillez entrer des valeurs valides")
 
@@ -353,7 +532,7 @@ class BaseCanvas(QOpenGLWidget):
             for i, ant in enumerate(self.ants)
         }
         self.civ.step()
-        self.best_path_text = "Best Path: N/A"
+        self.best_path_text = "Chemin Optimal: N/A"
         self.cached_layout = None
 
         self.first_composition_done = False
@@ -381,11 +560,11 @@ class BaseCanvas(QOpenGLWidget):
             self.civ.step()
             best_path = self.civ.get_best_path()  # Renvoie une liste de City
             if best_path:
-                self.best_path_text = "Best Path: " + " > ".join(
+                self.best_path_text = "Chemin Optimal: " + "→".join(
                     str(city.get_id()) for city in best_path
                 )
             else:
-                self.best_path_text = "Best Path: N/A"
+                self.best_path_text = "Chemin Optimal: N/A"
             for ant in self.ants:
                 self.ant_progress[ant] = 0.0
             self.start_time = time.time()
@@ -401,6 +580,12 @@ class BaseCanvas(QOpenGLWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         painter.fillRect(self.rect(), QColor(50, 50, 50))
+
+        # Définir un offset pour déplacer le graphe
+        offset_x = 180  # Modifier cette valeur pour ajuster horizontalement
+        offset_y = 130  # Modifier cette valeur pour ajuster verticalement
+
+        painter.translate(offset_x, offset_y)
 
         # Calcul du layout (peut être redéfini par les sous-classes)
         if self.cached_layout is None:
@@ -429,6 +614,28 @@ class BaseCanvas(QOpenGLWidget):
             road_pen = QPen(road_color, thickness, Qt.SolidLine)
             painter.setPen(road_pen)
             painter.drawLine(start, end)
+
+            # Dessin de la flèche indiquant le sens de la route
+            road_pen = QPen(Qt.white, 2, Qt.SolidLine)
+            painter.setPen(road_pen)
+            middle = QPointF((start.x() + end.x()) / 2, (start.y() + end.y()) / 2)
+            dx = end.x() - start.x()
+            dy = end.y() - start.y()
+            angle = math.atan2(dy, dx)
+            arrow_size = 30
+            arrow_angle = math.radians(30)
+            arrow_p1 = QPointF(
+                middle.x() - arrow_size * math.cos(angle - arrow_angle),
+                middle.y() - arrow_size * math.sin(angle - arrow_angle),
+            )
+            arrow_p2 = QPointF(
+                middle.x() - arrow_size * math.cos(angle + arrow_angle),
+                middle.y() - arrow_size * math.sin(angle + arrow_angle),
+            )
+            arrow_head = QPolygonF([middle, arrow_p1, arrow_p2])
+            painter.setBrush(QBrush(Qt.white, Qt.SolidPattern))
+            painter.setPen(QPen(road_color, 4))
+            painter.drawPolygon(arrow_head)
 
             # Préparation du texte (poids de la route et phéromone)
             if self.show_road_text:
@@ -499,10 +706,11 @@ class BaseCanvas(QOpenGLWidget):
                 city_text,
             )
 
-        # Affichage du meilleur chemin
-        painter.setFont(QFont("Roboto", 20))
-        painter.setPen(QPen(QColor(230, 230, 230)))
-        painter.drawText(10, 30, self.best_path_text)
+        # # Affichage du meilleur chemin
+        # painter.setFont(QFont("Roboto", 20))
+        # painter.setPen(QPen(QColor(230, 230, 230)))
+        # painter.drawText(10, 30, self.best_path_text)
+        self.display_best_path_window()
 
         # Affichage des textes sur les routes
         painter.setFont(QFont("Roboto", 14))
@@ -596,7 +804,7 @@ class BaseCanvas(QOpenGLWidget):
             # Modifier la méthode genetic_algo_application pour mettre à jour le compteur
             original_genetic_algo = self.civ.genetic_algo_application
 
-            def modified_genetic_algo(nb_iteration=200):
+            def modified_genetic_algo(nb_iteration=100):
                 # Stocker les valeurs de threshold_genetic_algo initiales
                 threshold_initial = self.civ._Civilization__threshold_genetic_algo
 
@@ -641,7 +849,7 @@ class BaseCanvas(QOpenGLWidget):
                 # Réactiver le bouton
                 if genetic_button:
                     genetic_button.setEnabled(True)
-                    genetic_button.setText("Lancer algo. génétique")
+                    genetic_button.setText("Lancer Algo. Génétique")
 
                 # Redémarrer l'animation
                 self.timer.start()
@@ -650,7 +858,7 @@ class BaseCanvas(QOpenGLWidget):
             self.civ.genetic_algo_application = modified_genetic_algo
 
             # Lancer l'algorithme
-            self.civ.genetic_algo_application(200)
+            self.civ.genetic_algo_application((100))
 
             # Restaurer la méthode originale
             self.civ.genetic_algo_application = original_genetic_algo
@@ -673,7 +881,7 @@ class BaseCanvas(QOpenGLWidget):
             best_worker = self.civ.best_worker()
             best_explorer = self.civ.best_explorer()
 
-            # Extraire les paramètres (alpha, beta, gamma)
+            # Extraire les paramètres (alpha, beta)
             worker_ant = best_worker[0]
             explorer_ant = best_explorer[0]
 
@@ -683,23 +891,21 @@ class BaseCanvas(QOpenGLWidget):
             # Mettre à jour le texte du chemin optimal
             best_path = self.civ.get_best_path()
             if best_path:
-                path_text = " > ".join(str(city.get_id()) for city in best_path)
-                self.best_path_text = "Best Path (Genetic): " + path_text
+                path_text = "→".join(str(city.get_id()) for city in best_path)
+                self.best_path_text = "Chemin Optimal: " + path_text
 
             # Préparer le texte des résultats avec plus d'espacement
             results_text = (
                 f"<b>Configuration optimale trouvée:</b><br><br>"
-                f"<b>Meilleur travailleur</b> (ID: {worker_ant.get_id()}):<br>"
+                f"<b>Meilleure travailleuse</b> (ID: {worker_ant.get_id()}):<br>"
                 f"• Alpha: <b>{worker_params[0]:.2f}</b><br>"
                 f"• Beta: <b>{worker_params[1]:.2f}</b><br>"
-                f"• Gamma: <b>{worker_params[2]:.2f}</b><br>"
                 f"• Nourriture collectée: <b>{best_worker[1]}</b><br><br>"
-                f"<b>Meilleur explorateur</b> (ID: {explorer_ant.get_id()}):<br>"
+                f"<b>Meilleure exploratrice</b> (ID: {explorer_ant.get_id()}):<br>"
                 f"• Alpha: <b>{explorer_params[0]:.2f}</b><br>"
                 f"• Beta: <b>{explorer_params[1]:.2f}</b><br>"
-                f"• Gamma: <b>{explorer_params[2]:.2f}</b><br>"
-                f"• Nombre d'explorations: <b>{best_explorer[2]}</b><br><br>"
-                f"<b>Chemin optimal:</b><br>{path_text}"
+                f"• Chemins explorés: <b>{best_explorer[2]}</b><br><br>"
+                f"<b>Chemin Optimal:</b><br>{path_text}"
             )
 
             # Afficher les résultats
@@ -712,6 +918,9 @@ class BaseCanvas(QOpenGLWidget):
             parent = self.parent()
             if hasattr(parent, "iteration_counter"):
                 parent.iteration_counter.setText("Algorithme terminé!")
+                parent.iteration_counter.setAlignment(
+                    Qt.AlignCenter
+                )  # Centrer le texte
 
             # Réinitialiser l'animation
             self.start_time = time.time()
@@ -739,7 +948,7 @@ class BaseCanvas(QOpenGLWidget):
             traceback.print_exc()
 
 
-# Canvas classique
+# Canvas classique avec décalage central (utilise compute_layout)
 class Canvas(BaseCanvas):
     def __init__(self, civ, parent=None):
         super().__init__(civ, False, parent)
@@ -759,7 +968,7 @@ class Canvas(BaseCanvas):
         return node_positions
 
 
-# Canvas avec placement de villes et de routes.
+# SimulationCanvas qui utilise compute_free_layout et ne décale pas le layout
 class SimulationCanvas(BaseCanvas):
     def __init__(self, civ, parent=None):
         super().__init__(civ, True, parent)
@@ -782,10 +991,6 @@ class SimulationCanvas(BaseCanvas):
         return node_positions
 
     def mousePressEvent(self, event):
-        # Vérifier si le clic est dans la zone du widget input_group
-        if self.input_group.geometry().contains(event.pos()):
-            return
-
         if event.button() == Qt.LeftButton:
             pos = event.pos()
             # Si aucune ville n'est proche, en créer une nouvelle
