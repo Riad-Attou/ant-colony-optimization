@@ -93,10 +93,6 @@ class Civilization:
         self.__nest = nest
         return
 
-    def set_food_source(self, food_source: City):
-        self.__food_source = food_source
-        return
-
     def set_initial_pheromone(self, new_initial_pheronome: float):
         self.__initial_pheromone = new_initial_pheronome
 

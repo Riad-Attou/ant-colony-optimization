@@ -21,7 +21,7 @@ class Ant:
         self.__cumulated_weights = 0
         self.__food_quantity = 0
         self.__explored_roads_count = {}
-        self.__q0 = 0.5
+        self.__q0 = 0.25
         self.__color = None
 
     def get_id(self):
