@@ -891,14 +891,6 @@ class BaseCanvas(QOpenGLWidget):
                         if best_path_has_changed:
                             self.best_path = new_best_path
 
-                        if self.best_path is not None:
-                            print(
-                                [
-                                    self.best_path[i].get_id()
-                                    for i in range(len(self.best_path))
-                                ]
-                            )
-
                     threshold_genetic_algo -= 1
 
                 # Afficher les résultats
