@@ -161,7 +161,7 @@ class Visualizer(QWidget):
             }
             """
         )
-        self.results_scroll.setMinimumHeight(280)
+        self.results_scroll.setMaximumHeight(200)
 
         # Conteneur pour le QLabel (nécessaire pour que la couleur de fond s'affiche correctement)
         self.results_container = QWidget()
@@ -212,7 +212,7 @@ class Visualizer(QWidget):
 
     def resizeEvent(self, event):
         self.canvas.setGeometry(0, 0, self.width(), self.height())
-        self.genetic_group.setGeometry(60, 540, 395, 500)
+        self.genetic_group.setGeometry(60, 540, 395, 420)
         super().resizeEvent(event)
 
     def toggleRoadText(self, state):
