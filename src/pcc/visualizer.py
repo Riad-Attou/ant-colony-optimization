@@ -1,6 +1,7 @@
 import math
 import time
 
+import matplotlib.pyplot as plt
 from PyQt5.QtCore import QPointF, Qt, QTimer
 from PyQt5.QtGui import QBrush, QColor, QFont, QIcon, QPainter, QPen, QPolygonF
 from PyQt5.QtWidgets import (
@@ -839,7 +840,9 @@ class BaseCanvas(QOpenGLWidget):
 
                 # Boucle principale de l'algorithme génétique
                 threshold_genetic_algo = threshold_initial
+                convergence_times = []
                 while threshold_genetic_algo > 0:
+                    fake_step = 0
                     # Mettre à jour le label d'itération
                     if iteration_label:
                         iteration_label.setText(
@@ -866,11 +869,13 @@ class BaseCanvas(QOpenGLWidget):
                     for road in self.civ.get_roads():
                         road.reset_pheromone(self.civ.get_initial_pheromone())
 
+                    self.best_path = None
+
                     # Exécuter nb_iteration fois step()
-                    for _ in range(nb_iteration):
+                    for iter in range(nb_iteration):
                         self.civ.step()
+                        fake_step += 1
                         best_path_has_changed = False
-                        self.best_path = None
 
                         if self.best_path is None:
                             self.best_path = self.civ.get_best_path()
@@ -890,12 +895,15 @@ class BaseCanvas(QOpenGLWidget):
                             self.step_without_change += 1
 
                         if not best_path_has_changed and self.step_without_change == 20:
-                            print("CONVERGENCE ATTEINTE :", self.civ.steps - 20)
+                            convergence_times.append(fake_step)
+                            print("CONVERGENCE ATTEINTE :", fake_step - 20)
 
                         if best_path_has_changed:
                             self.best_path = new_best_path
 
                     threshold_genetic_algo -= 1
+
+                self.plot_convergence_times(convergence_times)
 
                 # Afficher les résultats
                 self.display_results(results_area)
@@ -1000,6 +1008,14 @@ class BaseCanvas(QOpenGLWidget):
             import traceback
 
             traceback.print_exc()
+
+    def plot_convergence_times(self, convergence_times):
+        nb_data = self.civ.get_threshold_genetic_algo()
+        plt.plot([i for i in range(nb_data)], convergence_times[:nb_data])
+        plt.xlabel("Génération")
+        plt.ylabel("Nombre de steps avant convergence")
+        plt.show()
+        return
 
 
 # Canvas classique avec décalage central (utilise compute_layout)

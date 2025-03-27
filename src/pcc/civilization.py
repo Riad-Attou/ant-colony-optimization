@@ -30,7 +30,7 @@ class Civilization:
         self.__initial_pheromone = initial_pheromone
         self.__scale_factor = 120  # 1 unité de poids correspond à 120 pixels
         self.__mutation_factor = mutation_factor
-        self.__threshold_genetic_algo = 300
+        self.__threshold_genetic_algo = 100
         self.__steps_genetic_algo = steps_genetic_algo
 
     def get_cities(self):
@@ -66,6 +66,9 @@ class Civilization:
     def add_city(self, city: City):
         self.__cities.append(city)
         return
+
+    def get_threshold_genetic_algo(self):
+        return self.__threshold_genetic_algo
 
     def set_ants(self, ants):
         self.__ants = ants
