@@ -212,7 +212,7 @@ class Visualizer(QWidget):
 
     def resizeEvent(self, event):
         self.canvas.setGeometry(0, 0, self.width(), self.height())
-        self.genetic_group.setGeometry(60, 550, 395, 500)
+        self.genetic_group.setGeometry(60, 540, 395, 500)
         super().resizeEvent(event)
 
     def toggleRoadText(self, state):

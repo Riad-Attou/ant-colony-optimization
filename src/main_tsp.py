@@ -16,6 +16,7 @@ if __name__ == "__main__":
     civ = create_full_city_tsp(5)
     # civ = create_small_full_city_tsp()
     main(civ, edition_mode=False)
+    civ.algo_genetic_perf()
 
     ####################################
     # TSP AVEC UNE VILLE PERSONNALISÉE #

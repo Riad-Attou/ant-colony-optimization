@@ -1,5 +1,6 @@
 import random
 
+import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.manifold import MDS
 
@@ -330,6 +331,8 @@ class Civilization:
         threshold_genetic_algo = self.__threshold_genetic_algo
         while threshold_genetic_algo > 0:
             self.genetic_algo()
+            for road in self.__roads:
+                road.reset_pheromone(self.__initial_pheromone)
             for ant in self.__ants:
                 ant.reset_ant()
             for i in range(self.__steps_genetic_algo):
@@ -352,6 +355,87 @@ class Civilization:
         ]
         best_explorers = sorted(ants_data, key=lambda x: x[2], reverse=True)
         return best_explorers[0]
+
+    def algo_genetic_perf(self):
+        fitness_work = []
+        fitness_explore = []
+        alpha_work = []
+        beta_work = []
+        alpha_explore = []
+        beta_explore = []
+
+        best_worker = self.best_worker()
+        best_explorer = self.best_explorer()
+
+        fitness_work.append(best_worker[1])
+        fitness_explore.append(best_explorer[2])
+        alpha_work.append(best_worker[0].get_parameters()[0])
+        beta_work.append(best_worker[0].get_parameters()[1])
+        alpha_explore.append(best_explorer[0].get_parameters()[0])
+        beta_explore.append(best_explorer[0].get_parameters()[1])
+
+        for i in range(self.__steps_genetic_algo):
+            self.step()
+
+        threshold_genetic_algo = self.__threshold_genetic_algo
+        while threshold_genetic_algo > 0:
+            self.genetic_algo()
+            best_worker = self.best_worker()
+            best_explorer = self.best_explorer()
+
+            fitness_work.append(best_worker[1])
+            fitness_explore.append(best_explorer[2])
+            alpha_work.append(best_worker[0].get_parameters()[0])
+            beta_work.append(best_worker[0].get_parameters()[1])
+            alpha_explore.append(best_explorer[0].get_parameters()[0])
+            beta_explore.append(best_explorer[0].get_parameters()[1])
+
+            for ant in self.__ants:
+                ant.reset_ant()
+            for i in range(self.__steps_genetic_algo):
+                self.step()
+
+            threshold_genetic_algo -= 1
+
+        iterations = np.arange(len(alpha_work))
+
+        # Affichage des graphiques
+        plt.figure(figsize=(8, 5))
+        plt.plot(iterations, alpha_work, label="Alpha", marker="o")
+        plt.plot(iterations, beta_work, label="Beta", marker="s")
+        plt.xlabel("Générations")
+        plt.ylabel("Alpha-Beta")
+        plt.title("Évolution des paramètres de la meilleure travailleuse")
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+        plt.figure(figsize=(8, 5))
+        plt.plot(iterations, alpha_explore, label="Alpha", marker="o")
+        plt.plot(iterations, beta_explore, label="Beta", marker="s")
+        plt.xlabel("Générations")
+        plt.ylabel("Alpha-Beta")
+        plt.title("Évolution des paramètres de la meilleure exploratrice")
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+        plt.figure(figsize=(8, 5))
+        plt.plot(
+            iterations,
+            fitness_work,
+            label="Qauntité de nourriture collectée",
+            marker="o",
+        )
+        plt.plot(
+            iterations, fitness_explore, label="Nombre de chemins explorés", marker="s"
+        )
+        plt.xlabel("Générations")
+        plt.ylabel("Fitness")
+        plt.title("Évolution des fitness des meilleurs individus")
+        plt.legend()
+        plt.grid(True)
+        plt.show()
 
     def __str__(self):
         return f"Civilization:\n\tNest: City {self.__nest.get_id()}\
