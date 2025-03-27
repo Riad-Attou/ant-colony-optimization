@@ -19,9 +19,6 @@ class Road:
     def get_pheromone(self):
         return self.__pheromone
 
-    def get_initial_pheromone(self):
-        return self.__initial_pheromone
-
     def add_pheromone(self, pheromone: float):
         self.__pheromone += pheromone
         return

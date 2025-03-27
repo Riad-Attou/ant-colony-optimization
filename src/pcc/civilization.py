@@ -16,7 +16,7 @@ class Civilization:
         evaporation_rate: float,
         initial_pheromone: float,
         mutation_factor: float,
-        steps_genetic_algo,
+        steps_genetic_algo: int,
     ):
         self.__cities = [nest, food_source]
         self.__roads = []
@@ -213,7 +213,6 @@ class Civilization:
 
         if self.steps == self.__half_pheromone_time:
             self.halve_pheromone()
-
         # Évaporation des phéromones
         for road in self.__roads:
             road.evaporate_pheromone()
@@ -357,18 +356,13 @@ class Civilization:
     def genetic_algo_application(self):
         for i in range(self.__steps_genetic_algo):
             self.step()
-        # for ant in self.__ants:
-        #     ant.set_exploration_fitness()
         threshold_genetic_algo = self.__threshold_genetic_algo
         while threshold_genetic_algo > 0:
-            print("iteration : ", threshold_genetic_algo)
             self.genetic_algo()
             for ant in self.__ants:
                 ant.reset_ant()
             for i in range(self.__steps_genetic_algo):
                 self.step()
-            # for ant in self.__ants:
-            #     ant.set_exploration_fitness()
             threshold_genetic_algo -= 1
 
     def best_worker(self):

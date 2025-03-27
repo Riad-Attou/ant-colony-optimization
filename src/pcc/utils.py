@@ -73,7 +73,7 @@ def get_really_big_civ_pcc():
     cities = [City(i) for i in range(nb_cities)]
 
     # Le nid est la première ville et la source de nourriture la dernière.
-    civ = Civilization(cities[0], cities[-1], 0.05, 0.1, 0.1, 100)
+    civ = Civilization(cities[0], cities[-1], 0.05, 0.1, 0.1, 200)
 
     # Ajouter les villes intermédiaires
     for i in range(1, nb_cities - 1):
@@ -118,7 +118,7 @@ def get_really_big_civ_pcc():
     civ.add_road(5.0, cities[8], cities[16])
     civ.add_road(6.0, cities[3], cities[10])
 
-    for i in range(50):
+    for i in range(80):
         civ.create_ant_colony(1, random.uniform(0, 5), random.uniform(0, 5))
     return civ
 

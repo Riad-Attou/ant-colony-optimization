@@ -4,11 +4,10 @@ from PyQt5.QtGui import QColor
 
 
 class Ant:
-    def __init__(self, id: int, alpha: float, beta: float, gamma: float, start_city):
+    def __init__(self, id: int, alpha: float, beta: float, start_city):
         self.__id = id
         self.__alpha = alpha
         self.__beta = beta
-        self.__gamma = gamma
         self.__has_food = False
         self.__start_city = start_city
         self.__current_city = start_city
@@ -22,8 +21,9 @@ class Ant:
         self.__cumulated_weights = 0
         self.__food_quantity = 0
         self.__explored_roads_count = {}
-        self.__q0 = 0.5
+        self.__q0 = 0.25
         self.__visited_cities = []
+        self.__color = None
 
     def get_id(self):
         return self.__id
@@ -34,18 +34,22 @@ class Ant:
         else:
             return self.__color_no_food
 
+    def get_personalised_color(self):
+        return self.__color
+
+    def set_color(self, color):
+        self.__color_no_food = color
+        self.__color = color
+
     def get_speed(self):
         return self.__speed
-
-    def get_t(self):
-        return self.__t
 
     def set_cumulated_weights(self, cumulated_weights: float):
         self.__cumulated_weights = cumulated_weights
         return
 
     def get_parameters(self):
-        return self.__alpha, self.__beta, self.__gamma
+        return self.__alpha, self.__beta
 
     def get_food_quantity(self):
         return self.__food_quantity
@@ -58,9 +62,6 @@ class Ant:
 
     def set_beta(self, beta):
         self.__beta = beta
-
-    def set_gamma(self, gamma):
-        self.__gamma = gamma
 
     def get_current_city(self):
         return self.__current_city
@@ -77,6 +78,9 @@ class Ant:
 
     def reset_visited_cities(self):
         self.__visited_cities = []
+
+    def get_exploration_fitness(self):
+        return len(self.__explored_roads_count)
 
     def reset_ant(self):
         self.__current_city = self.__start_city
@@ -104,9 +108,6 @@ class Ant:
     def get_explored_roads_count(self):
         return self.__explored_roads_count
 
-    def get_total_exploration_count(self):
-        return len(self.__explored_roads_count)
-
     def add_explored_roads_count(self, road):
         self.__explored_roads_count[road] = 0
 
@@ -124,8 +125,8 @@ class Ant:
         self.__has_food = has_food
         return
 
-    def increment_explored_roads(self, road):
-        self.__explored_roads_count[road] += 1
+    def increment_explored_roads(self, key):
+        self.__explored_roads_count[key] += 1
 
     def set_food_quantity(self):
         self.__food_quantity += 1
@@ -158,23 +159,24 @@ class Ant:
             return random.choice(roads)
         if q <= self.__q0:
             # Exploitation : sélection de la route avec le poids maximal
-            best_road_index = weights.index(max(weights))
-            return roads[best_road_index]
+            return max(
+                roads,
+                key=lambda road: (road.get_pheromone())
+                * ((1 / road.get_weight()) ** self.__beta),
+            )
+
         else:
             # Exploration : sélection d'une route selon les probabilités P_k(r,s)
             return random.choices(roads, weights=probabilities, k=1)[0]
 
     def mutation(self):
-        parameter_to_mutate = random.choice(["alpha", "beta", "gamma"])
+        parameter_to_mutate = random.choice(["alpha", "beta"])
         if parameter_to_mutate == "alpha":
             alpha_mutated = random.uniform(0, 5)
             self.set_alpha(alpha_mutated)
         elif parameter_to_mutate == "beta":
             beta_mutated = random.uniform(0, 5)
             self.set_beta(beta_mutated)
-        else:
-            gamma_mutated = random.uniform(0, 5)
-            self.set_gamma(gamma_mutated)
 
     def __str__(self):
-        return f"Ant {self.__id}:\n\tParameters (alpha, beta, gamma): {self.get_parameters()}\n\tHas food: {self.has_food()}\n"
+        return f"Ant {self.__id}:\n\tParameters (alpha, beta): {self.get_parameters()}\n\tHas food: {self.has_food()}\n"
