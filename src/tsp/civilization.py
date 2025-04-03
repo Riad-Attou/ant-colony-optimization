@@ -110,7 +110,6 @@ class Civilization:
         return
 
     def reset_ants(self):
-        # Vider la liste des fourmis
         self.__ants = []
         return
 
@@ -131,7 +130,7 @@ class Civilization:
         return D
 
     def compute_free_layout(self):
-        # Retourne un tableau numpy des positions définies pour chaque ville
+        """Retourne un tableau numpy des positions définies pour chaque ville"""
         return np.array(
             [
                 [city.get_position().x(), city.get_position().y()]
@@ -152,7 +151,6 @@ class Civilization:
 
     def crossover(self, ant_mum, ant_dad):
         parameters = [random.choice([0, 1]) for _ in range(3)]
-        # Héritage des paramètres
         alpha = (
             ant_mum.get_parameters()[0]
             if parameters[0] == 0
@@ -288,7 +286,6 @@ class Civilization:
         de départ, visite chaque ville une seule fois, puis retourne à cette ville.
         """
         path = []
-        # Choisissez la ville de départ (par exemple, self.__start_city)
         current_city = self.__nest
         path.append(current_city)
         visited = {current_city}
@@ -309,7 +306,7 @@ class Civilization:
                     best_road = road
                     best_pheromone = road.get_pheromone()
 
-            # Sécurité (inutile dans un graphe complet a priori)
+            # Sécurité (inutile dans un graphe complet, a priori)
             if best_road is None:
                 break
 

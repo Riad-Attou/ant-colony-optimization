@@ -113,7 +113,6 @@ class Civilization:
         return
 
     def reset_ants(self):
-        # Vider la liste des fourmis
         self.__ants = []
         return
 
@@ -125,16 +124,15 @@ class Civilization:
         # Pour chaque route, on met à jour la matrice.
         for road in self.__roads:
             start, end = road.get_cities()
-            # On suppose que chaque ville est unique dans la liste
             i = self.__cities.index(start)
             j = self.__cities.index(end)
             distance = road.get_weight() * self.__scale_factor
             D[i, j] = distance
-            D[j, i] = distance  # Supposons que les routes sont bidirectionnelles
+            D[j, i] = distance
         return D
 
     def compute_free_layout(self):
-        # Retourne un tableau numpy des positions définies pour chaque ville
+        """Retourne un tableau numpy des positions définies pour chaque ville"""
         return np.array(
             [
                 [city.get_position().x(), city.get_position().y()]
@@ -167,7 +165,6 @@ class Civilization:
 
     def crossover(self, ant_mum, ant_dad):
         parameters = [random.choice([0, 1]) for _ in range(2)]
-        # Héritage des paramètres
         alpha = (
             ant_mum.get_parameters()[0]
             if parameters[0] == 0

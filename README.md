@@ -11,7 +11,7 @@ Devoir d'algorithmes collaboratifs et applications. Ce devoir vise à utiliser u
    cd ant_colony
    ```
 
-2. Installer les dépendances :
+2. Installer les dépendances (un environnement virtuel est recommandé) :
 
     ```bash
     pip install -r requirements.txt
@@ -30,4 +30,4 @@ Asma EL MOUHSINE : <asma.el-mouhsine@etu.ec-lyon.fr>
 
 ---
 
-*Centrale Lyon - 2024-2025*
+Centrale Lyon - 2024-2025

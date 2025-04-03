@@ -72,10 +72,8 @@ def get_really_big_civ_pcc():
     nb_cities = 20
     cities = [City(i) for i in range(nb_cities)]
 
-    # Le nid est la première ville et la source de nourriture la dernière.
     civ = Civilization(cities[0], cities[-1], 0.05, 0.1, 0.1, 200)
 
-    # Ajouter les villes intermédiaires
     for i in range(1, nb_cities - 1):
         civ.add_city(cities[i])
 
@@ -136,29 +134,3 @@ def main_pcc(civ: Civilization, edition_mode):
     window.showMaximized()
 
     sys.exit(app.exec_())
-
-
-# if __name__ == "__main__":
-
-#     # small_civ = get_small_civ_pcc()
-#     # small_civ.step()
-#     # main(small_civ, False)
-
-#     # big_civ = get_big_civ_pcc()
-#     # big_civ.step()
-#     # main(big_civ, False)
-
-#     # really_big_civ = get_really_big_civ_pcc()
-#     # really_big_civ.step()
-#     # main(really_big_civ, False)
-
-#     # nest = City(0, QPointF(500, 400))
-#     # food_source = City(1, QPointF(1800, 400))
-#     # civ = Civilization(nest, food_source, 0.05, 1, 0.2, 0.2, 0.2)
-#     # civ.add_road(1300 / 1500, nest, food_source)
-#     # civ.create_ant_colony(10, 0.5, 0.5, 0.5)
-#     # main(civ, True)
-
-#     big_civ = get_big_civ_pcc()
-#     big_civ.genetic_algo_application()
-#     main(big_civ, True)

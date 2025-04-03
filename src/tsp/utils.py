@@ -74,10 +74,8 @@ def get_really_big_civ_tsp():
     nb_cities = 20
     cities = [City(i) for i in range(nb_cities)]
 
-    # Le nid est la première ville et la source de nourriture la dernière.
     civ = Civilization(cities[0], 0.05, 0.1, 0.1, 200)
 
-    # Ajouter les villes intermédiaires
     for i in range(1, nb_cities - 1):
         civ.add_city(cities[i])
 
@@ -170,28 +168,3 @@ def main_tsp(civ: Civilization, edition_mode):
     window.showMaximized()
 
     sys.exit(app.exec_())
-
-
-# if __name__ == "__main__":
-
-#     # small_civ = get_small_civ_tsp()
-#     # small_civ.step()
-#     # main(small_civ, False)
-
-#     # big_civ = get_big_civ_tsp()
-#     # big_civ.step()
-#     # main(big_civ, False)
-
-#     # really_big_civ = get_really_big_civ_tsp()
-#     # really_big_civ.step()
-#     # main(really_big_civ, False)
-
-#     # big_civ = get_big_civ_tsp()
-#     # big_civ.genetic_algo_application()
-#     # main(big_civ, False)
-
-#     civ = create_small_full_city_tsp()
-#     main(civ, False)
-
-#     # civ = get_empty_civ_tsp()
-#     # main(civ, True)

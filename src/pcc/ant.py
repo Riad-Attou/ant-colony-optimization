@@ -11,7 +11,7 @@ class Ant:
         self.__has_food = False
         self.__start_city = start_city
         self.__current_city = start_city
-        self.__next_city = None  # Updated by Civilization.step()
+        self.__next_city = None
         self.__speed = 1.0
         self.__color_no_food = QColor(100, random.randint(240, 255), 100)
         self.__color_with_food = QColor(
@@ -152,7 +152,7 @@ class Ant:
                 * ((1 / road.get_weight()) ** self.__beta),
             )
         else:
-            # Exploration : sélection d'une route selon les probabilités P_k(r,s)
+            # Exploration : sélection d'une route selon les probabilités
             return random.choices(roads, weights=probabilities, k=1)[0]
 
     def mutation(self):

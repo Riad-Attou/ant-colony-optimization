@@ -16,7 +16,6 @@ if __name__ == "__main__":
     # civ = get_small_civ_pcc()
     # civ = get_really_big_civ_pcc()
     civ = get_big_civ_pcc()
-    # civ.algo_genetic_perf()
     main(civ, edition_mode=False)
 
     ####################################

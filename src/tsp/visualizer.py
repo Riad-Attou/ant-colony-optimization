@@ -35,10 +35,9 @@ class Visualizer(QWidget):
         self.setMinimumSize(800, 600)
         self.setWindowIcon(QIcon("assets/logo.webp"))
 
-        # Créer un layout principal pour les contrôles overlay
         self.main_layout = QVBoxLayout(self)
 
-        # Créer le canvas OpenGL qui affiche la simulation
+        # Créer le canvas selon le choix de mode
         if edition_mode:
             self.canvas = SimulationCanvas(civ, parent=self)
         else:
@@ -62,7 +61,7 @@ class Visualizer(QWidget):
         )
         show_text_layout = QVBoxLayout(self.show_text)
 
-        # Interrupteur (CheckBox) pour afficher/masquer le texte sous les routes
+        # Interrupteur pour afficher/masquer le texte sous les routes
         self.road_text_checkbox = QCheckBox("Cacher texte", self)
         self.road_text_checkbox.setFont(QFont("Roboto", 8, 5))
         self.road_text_checkbox.setChecked(True)
@@ -163,7 +162,7 @@ class Visualizer(QWidget):
         )
         self.results_scroll.setMaximumHeight(200)
 
-        # Conteneur pour le QLabel (nécessaire pour que la couleur de fond s'affiche correctement)
+        # Conteneur pour le QLabel
         self.results_container = QWidget()
         self.results_container.setStyleSheet(
             """
@@ -220,16 +219,16 @@ class Visualizer(QWidget):
         self.canvas.setShowRoadText(show_text)
 
 
-# La classe de base qui factorise le code commun
+# Canvas de base
 class BaseCanvas(QOpenGLWidget):
     def __init__(self, civ, edition_mode: bool, parent=None):
         super().__init__(parent)
-        self.civ = civ  # Instance de la civilisation
+        self.civ = civ
         self.cached_layout = None
         self.is_edition_mode = edition_mode
         self.ants = self.civ.get_ants()
         self.ant_progress = {ant: 0.0 for ant in self.ants}
-        self.ant_speed = 1.0  # Vitesse par défaut (modifiable via le slider)
+        self.ant_speed = 1.0
         self.last_update = time.time()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.updateAnimation)
@@ -243,7 +242,6 @@ class BaseCanvas(QOpenGLWidget):
         self.best_path_text = "Chemin Optimal: N/A"
         self.show_road_text = True
 
-        # Initialisation commune des widgets (paramètres des fourmis)
         self.init_input_widgets()
 
     def init_input_widgets(self):
@@ -275,11 +273,9 @@ class BaseCanvas(QOpenGLWidget):
         # Layout principal
         main_layout = QVBoxLayout(self.input_group)
 
-        # Utiliser un QGridLayout pour un meilleur contrôle
         grid_layout = QGridLayout()
-        grid_layout.setHorizontalSpacing(50)  # Espacement horizontal entre les colonnes
+        grid_layout.setHorizontalSpacing(50)
 
-        # Créer les champs d'entrée
         self.size_input = QLineEdit()
         self.alpha_input = QLineEdit()
         self.beta_input = QLineEdit()
@@ -289,12 +285,11 @@ class BaseCanvas(QOpenGLWidget):
             line_edit.setFixedWidth(100)
             line_edit.setStyleSheet("padding: 5px; border-radius: 5px;")
 
-        # Ajouter un espacement en haut
         main_layout.addSpacing(30)
 
-        # Créer les labels avec une largeur fixe suffisante
+        # Créer les labels
         label_nombre = QLabel("Nombre de fourmis:")
-        label_nombre.setMinimumWidth(180)  # Fixer une largeur minimale
+        label_nombre.setMinimumWidth(180)
         label_alpha = QLabel("Alpha:")
         label_alpha.setMinimumWidth(150)
         label_beta = QLabel("Beta:")
@@ -328,6 +323,7 @@ class BaseCanvas(QOpenGLWidget):
         color_layout.addWidget(self.color_display)
         main_layout.addLayout(color_layout)
         main_layout.addSpacing(30)
+
         # Slider pour la vitesse des fourmis
         speed_layout = QHBoxLayout()
         self.speed_slider = QSlider(Qt.Horizontal, self)
@@ -343,8 +339,9 @@ class BaseCanvas(QOpenGLWidget):
         speed_layout.addWidget(self.speed_label)
         speed_layout.addWidget(self.speed_slider)
         main_layout.addLayout(speed_layout)
-        # Espacement avant les boutons
+
         main_layout.addSpacing(50)
+
         # Boutons "Ajouter" et "Valider"
         button_layout = QHBoxLayout()
         self.add_button = QPushButton("Ajouter")
@@ -357,23 +354,13 @@ class BaseCanvas(QOpenGLWidget):
         button_layout.addWidget(self.validate_button)
         main_layout.addLayout(button_layout)
 
-        # Définir une taille fixe pour le QGroupBox
         self.input_group.adjustSize()  # Ajuste la taille au contenu
 
-        # Positionner à des coordonnées X,Y spécifiques
-        # Utilisez setGeometry(x, y, width, height) ou move(x, y)
-        x_position = 60  # Position X à 20 pixels du bord gauche
-        y_position = 43  # Position Y à 50 pixels du haut
-
-        # Option 1: move() positionne le widget aux coordonnées spécifiées
+        x_position = 60
+        y_position = 43
         self.input_group.move(x_position, y_position)
 
-        # OU Option 2: setGeometry() définit position et taille
-        # width = self.input_group.width()
-        # height = self.input_group.height()
-        # self.input_group.setGeometry(x_position, y_position, width, height)
-
-        # Le widget est directement ajouté à la fenêtre principale sans layout
+        # Le widget est directement ajouté à la fenêtre principale
         self.first_composition_done = False
         self.apply_styles()
 
@@ -411,7 +398,6 @@ class BaseCanvas(QOpenGLWidget):
 
     def display_best_path_window(self):
         """Affiche ou met à jour la fenêtre du meilleur chemin sans ralentir l'animation."""
-
         # Désactiver les mises à jour pour éviter les lags
         self.setUpdatesEnabled(False)
 
@@ -502,7 +488,7 @@ class BaseCanvas(QOpenGLWidget):
     def compose_colony_ants(self):
         if not self.first_composition_done:
             self.civ.reset_ants()
-            self.first_composition_done = True  # Marquer comme exécuté
+            self.first_composition_done = True
         try:
             colony_size = int(self.size_input.text())
             alpha = float(self.alpha_input.text())
@@ -581,17 +567,15 @@ class BaseCanvas(QOpenGLWidget):
         painter.setRenderHint(QPainter.Antialiasing)
         painter.fillRect(self.rect(), QColor(50, 50, 50))
 
-        # Définir un offset pour déplacer le graphe
-        offset_x = 180  # Modifier cette valeur pour ajuster horizontalement
-        offset_y = 130  # Modifier cette valeur pour ajuster verticalement
-
+        offset_x = 180
+        offset_y = 130
         painter.translate(offset_x, offset_y)
 
-        # Calcul du layout (peut être redéfini par les sous-classes)
+        # Calcul du layout
         if self.cached_layout is None:
             self.cached_layout = self.get_layout()
 
-        # Obtention des positions des villes (redéfinissable)
+        # Obtention des positions des villes
         node_positions = self.get_node_positions(self.cached_layout)
 
         # Dessin des routes
@@ -707,9 +691,6 @@ class BaseCanvas(QOpenGLWidget):
             )
 
         # # Affichage du meilleur chemin
-        # painter.setFont(QFont("Roboto", 20))
-        # painter.setPen(QPen(QColor(230, 230, 230)))
-        # painter.drawText(10, 30, self.best_path_text)
         self.display_best_path_window()
 
         # Affichage des textes sur les routes
@@ -808,7 +789,7 @@ class BaseCanvas(QOpenGLWidget):
                 # Stocker les valeurs de threshold_genetic_algo initiales
                 threshold_initial = self.civ._Civilization__threshold_genetic_algo
 
-                # Première partie : exécuter nb_iteration fois step()
+                # Exécuter nb_iteration fois step()
                 for _ in range(nb_iteration):
                     self.civ.step()
 
@@ -898,7 +879,7 @@ class BaseCanvas(QOpenGLWidget):
                 path_text = "→".join(str(city.get_id()) for city in best_path)
                 self.best_path_text = "Chemin Optimal: " + path_text
 
-            # Préparer le texte des résultats avec plus d'espacement
+            # Préparer le texte des résultats
             results_text = (
                 f"<b>Configuration optimale trouvée:</b><br><br>"
                 f"<b>Meilleure travailleuse</b> (ID: {worker_ant.get_id()}):<br>"
@@ -922,9 +903,7 @@ class BaseCanvas(QOpenGLWidget):
             parent = self.parent()
             if hasattr(parent, "iteration_counter"):
                 parent.iteration_counter.setText("Algorithme terminé!")
-                parent.iteration_counter.setAlignment(
-                    Qt.AlignCenter
-                )  # Centrer le texte
+                parent.iteration_counter.setAlignment(Qt.AlignCenter)
 
             # Réinitialiser l'animation
             self.start_time = time.time()
@@ -952,7 +931,7 @@ class BaseCanvas(QOpenGLWidget):
             traceback.print_exc()
 
 
-# Canvas classique avec décalage central (utilise compute_layout)
+# Canvas classique statique
 class Canvas(BaseCanvas):
     def __init__(self, civ, parent=None):
         super().__init__(civ, False, parent)
@@ -972,7 +951,7 @@ class Canvas(BaseCanvas):
         return node_positions
 
 
-# SimulationCanvas qui utilise compute_free_layout et ne décale pas le layout
+# SimulationCanvas avec placement de villes dynamique
 class SimulationCanvas(BaseCanvas):
     def __init__(self, civ, parent=None):
         super().__init__(civ, True, parent)
@@ -1010,7 +989,7 @@ class SimulationCanvas(BaseCanvas):
             clicked_city = self.find_city_near(pos)
             if clicked_city:
                 if self.current_road_start is None:
-                    # Première sélection : stocker la ville de départ
+                    # Stocker la ville de départ
                     self.current_road_start = clicked_city
                 else:
                     # Si c'est une ville différente, créer une route
