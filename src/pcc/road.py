@@ -34,7 +34,6 @@ class Road:
         self.__pheromone = initial_value
 
     def evaporate_pheromone(self):
-        """rho à paramétrer"""
         rho = 0.05
         self.__pheromone *= 1 - rho
         return
