@@ -1,4 +1,4 @@
-# Ant Colony Simulation
+# Ant Colony Optimization
 
 Devoir d'algorithmes collaboratifs et applications. Ce devoir vise à utiliser un algorithme de l'ACO pour les problèmes de recherche du plus court chemin (PCC) et du problème du voyageur de commerce (TSP).
 
