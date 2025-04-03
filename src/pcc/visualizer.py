@@ -576,6 +576,9 @@ class BaseCanvas(QOpenGLWidget):
 
         # Obtention des positions des villes
         node_positions = self.get_node_positions(self.cached_layout)
+        for city in node_positions.keys():
+            pos = node_positions[city]
+            node_positions[city] = QPointF(pos.x() - offset_x, pos.y() - offset_y)
 
         # Dessin des routes
         edge_pen = QPen(QColor(255, 255, 255))

@@ -577,6 +577,9 @@ class BaseCanvas(QOpenGLWidget):
 
         # Obtention des positions des villes
         node_positions = self.get_node_positions(self.cached_layout)
+        for city in node_positions.keys():
+            pos = node_positions[city]
+            node_positions[city] = QPointF(pos.x() - offset_x, pos.y() - offset_y)
 
         # Dessin des routes
         edge_pen = QPen(QColor(255, 255, 255))
@@ -598,28 +601,6 @@ class BaseCanvas(QOpenGLWidget):
             road_pen = QPen(road_color, thickness, Qt.SolidLine)
             painter.setPen(road_pen)
             painter.drawLine(start, end)
-
-            # Dessin de la flèche indiquant le sens de la route
-            road_pen = QPen(Qt.white, 2, Qt.SolidLine)
-            painter.setPen(road_pen)
-            middle = QPointF((start.x() + end.x()) / 2, (start.y() + end.y()) / 2)
-            dx = end.x() - start.x()
-            dy = end.y() - start.y()
-            angle = math.atan2(dy, dx)
-            arrow_size = 30
-            arrow_angle = math.radians(30)
-            arrow_p1 = QPointF(
-                middle.x() - arrow_size * math.cos(angle - arrow_angle),
-                middle.y() - arrow_size * math.sin(angle - arrow_angle),
-            )
-            arrow_p2 = QPointF(
-                middle.x() - arrow_size * math.cos(angle + arrow_angle),
-                middle.y() - arrow_size * math.sin(angle + arrow_angle),
-            )
-            arrow_head = QPolygonF([middle, arrow_p1, arrow_p2])
-            painter.setBrush(QBrush(Qt.white, Qt.SolidPattern))
-            painter.setPen(QPen(road_color, 4))
-            painter.drawPolygon(arrow_head)
 
             # Préparation du texte (poids de la route et phéromone)
             if self.show_road_text:
@@ -732,7 +713,7 @@ class BaseCanvas(QOpenGLWidget):
         cities = self.civ.get_cities()
         for i, city in enumerate(cities):
             pos = layout[i]
-            node_positions[city] = QPointF(pos[0] + center.x(), pos[1] + center.y())
+            node_positions[city] = QPointF(pos[0], pos[1])
         return node_positions
 
     def ready_to_go(self):
