@@ -14,8 +14,8 @@ This repository contains an implementation of the **Ant Colony Optimization (ACO
 1. Clone this repository:
 
     ```bash
-    git clone <https://github.com/Riad-Attou/ant_colony.git>
-    cd ant_colony
+    git clone <https://github.com/Riad-Attou/ant-colony-optimization>
+    cd ant-colony-optimization
     ```
 
 2. Install the dependencies (a virtual environment is recommended):
