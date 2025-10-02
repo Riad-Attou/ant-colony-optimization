@@ -1,7 +1,18 @@
 # Ant Colony Optimization
 
-Devoir d'algorithmes collaboratifs et applications. Ce devoir vise à utiliser un algorithme de l'ACO pour les problèmes de recherche du plus court chemin (PCC) et du problème du voyageur de commerce (TSP).
+Ant Colony Optimization (ACO)
 
+This repository contains an implementation of the Ant Colony Optimization (ACO) algorithm for solving graph-based optimization problems. The algorithm is inspired by the foraging behavior of ants and uses pheromone trails to iteratively improve solutions.
+
+Features
+
+Implementation of the classical ACO algorithm
+
+Configurable parameters: pheromone evaporation rate, $\alpha$ (pheromone influence), $\beta$ (heuristic influence), number of ants, number of iterations
+
+Visualization of the best path and pheromone distribution over time
+
+Modular design that can be extended to other ACO variants (e.g., Ant Colony System, Max-Min Ant System)
 ## Installation
 
 1. Cloner ce dépôt :
